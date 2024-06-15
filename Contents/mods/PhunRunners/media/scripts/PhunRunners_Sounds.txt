@@ -1,0 +1,76 @@
+module Base
+{
+	sound PhunRunners_Start
+	{
+        category = Player,
+		loop = false, 
+		is3D = true,
+        clip { 
+			file = media/sound/PhunRunners_Start.ogg, 
+			distanceMax = 20, 
+			volume = 0.3f 
+		}
+	}
+	sound PhunRunners_End
+	{
+        category = Player, loop = false, is3D = true,
+        clip { 
+			file = media/sound/PhunRunners_End.ogg,
+			distanceMax = 20, 
+			volume = 0.3f 
+		}
+	}
+	sound PhunRunners_1
+	{
+        category = Vehicle, loop = false, is3D = true,
+        clip { file = media/sound/phunrunners_zed_1.mp3, distanceMax = 20, volume = 0.3f }
+	}
+
+	sound PhunRunners_2
+	{
+        category = Vehicle, loop = false, is3D = true,
+        clip { file = media/sound/phunrunners_zed_2.mp3, distanceMax = 20, volume = 0.3f }
+	}
+
+    sound PhunRunners_3
+	{
+        category = Vehicle, loop = false, is3D = true,
+        clip { file = media/sound/phunrunners_zed_3.mp3, distanceMax = 20, volume = 0.2f }
+	}
+
+    sound PhunRunners_4
+	{
+        category = Vehicle, loop = false, is3D = true,
+        clip { file = media/sound/phunrunners_zed_4.mp3, distanceMax = 20, volume = 0.3f }
+	}   
+
+    sound PhunRunners_5
+	{
+        category = Vehicle, loop = false, is3D = true,
+        clip { file = media/sound/phunrunners_zed_4.mp3, distanceMax = 20, volume = 0.3f }
+	}
+
+    sound PhunRunners_6
+	{
+        category = Vehicle, loop = false, is3D = true,
+        clip { file = media/sound/phunrunners_zed_4.mp3, distanceMax = 20, volume = 0.3f }
+	}		 
+
+	sound PhuRunners_Start_1
+	{
+        category = Player, loop = false, is3D = true,
+        clip { file = media/sound/phunrunners_start_1.mp3, distanceMax = 20, volume = 0.3f }
+	}
+
+	sound PhuRunners_Start_2
+	{
+        category = Vehicle, loop = false, is3D = true,
+        clip { file = media/sound/phunrunners_start_2.mp3, distanceMax = 20, volume = 0.3f }
+	}
+
+	sound PhuRunners_Start_3
+	{
+        category = Vehicle, loop = false, is3D = true,
+        clip { file = media/sound/phunrunners_start_3.mp3, distanceMax = 20, volume = 0.3f }
+	}
+}

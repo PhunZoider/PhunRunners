@@ -1,0 +1,8 @@
+IGUI_EN = {
+    IGUI_PhunRunners_RiskLevel = "Risk level: %1%",
+    IGUI_PhunRunners_RiskFromArea = "x %1 from area",
+    IGUI_PhunRunners_RiskFromMoon = "+ %1% from moon phase"
+    IGUI_PhunRunners_RiskFromTime = "+ %1 from survival time"
+    IGUI_PhunRunners_ZedsAreRestless = "Zombies are restless"
+    IGUI_PhunRunners_ZedsAreSettling = "Zombies are settled"
+}
