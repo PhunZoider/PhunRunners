@@ -13,7 +13,7 @@ function PhunRunnersUI.OnOpenPanel(playerObj, isRestless)
     local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 14
     local core = getCore()
     local width = 600 * FONT_SCALE
-    local height = 200 * FONT_SCALE
+    local height = 100 * FONT_SCALE
     local x = (core:getScreenWidth() - width) / 2
     local y = (core:getScreenHeight() - height) / 2
 
@@ -31,17 +31,6 @@ end
 function PhunRunnersUI:initialise()
     ISPanel.initialise(self);
 end
-
--- function PhunRunnersUI:createChildren()
---     ISPanel.createChildren(self);
---     local FONT_HGT = getTextManager():getFontHeight(UIFont.Medium);
-
---     local x = 10
---     local y = 10
---     local h = 20;
---     local w = self.width - 20;
-
--- end
 
 function PhunRunnersUI:close()
     self:setVisible(false);
