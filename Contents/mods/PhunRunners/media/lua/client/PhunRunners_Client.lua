@@ -138,7 +138,6 @@ end
 -- Should be called when a player first joins, when a cycle changes, when a location changes or once per day
 function PhunRunners:updatePlayer(playerObj)
     if not playerObj or not playerObj.getUsername then
-        print("???")
         return
     end
     if not self.data then

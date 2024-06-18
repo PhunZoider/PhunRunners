@@ -61,6 +61,11 @@ function PhunRunnersUI:render()
     end
 end
 
+function PhunRunnersUI:instantiate()
+    ISPanel.instantiate(self)
+    self.javaObject:setConsumeMouseEvents(false)
+end
+
 function PhunRunnersUI:new(x, y, width, height, player)
     local o = {};
     o = ISPanel:new(x, y, width, height, player);

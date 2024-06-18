@@ -5,7 +5,7 @@ require "MF_ISMoodle"
 local PhunRunners = PhunRunners
 local MF = MF;
 if MF then
-    MF.createMoodle("PhunRunners");    
+    MF.createMoodle("PhunRunners");
 end
 
 function PhunRunners:updateMoodles()
@@ -19,7 +19,7 @@ function PhunRunners:updateMoodles()
 end
 
 function PhunRunners:getSummary(playerObj)
-    
+
     local playerNumber = playerObj:getPlayerNum()
     local currentData = getSpecificPlayer(playerNumber):getModData().PhunRunners
     if not currentData or not currentData.location then
@@ -52,7 +52,7 @@ function PhunRunners:getSummary(playerObj)
     return {
         title = riskTitle,
         description = riskDesc,
-        spawnSprinters = currentData.spawnSprinters,
+        spawnSprinters = currentData.spawnSprinters == true,
         risk = currentData.risk,
         difficulty = currentData.difficulty,
         restless = currentData.spawnSprinters and self.doRun
