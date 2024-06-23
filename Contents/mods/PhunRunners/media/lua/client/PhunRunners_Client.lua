@@ -317,7 +317,7 @@ Events[PhunRunners.events.OnPhunRunnersStarting].Add(function()
     for i = 1, getOnlinePlayers():size() do
         local playerObj = getOnlinePlayers():get(i - 1)
         PhunRunners:updatePlayer(playerObj)
-        getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(0.50);
+        getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(0.25);
         -- show moodle?
         PhunRunnersUI.OnOpenPanel(playerObj, true)
         if MF and MF.getMoodle then
@@ -330,7 +330,7 @@ Events[PhunRunners.events.OnPhunRunnersEnding].Add(function()
     for i = 1, getOnlinePlayers():size() do
         local playerObj = getOnlinePlayers():get(i - 1)
         PhunRunners:updatePlayer(playerObj)
-        getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(0.50);
+        getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(0.25);
         -- hide moodle?
         PhunRunnersUI.OnOpenPanel(playerObj, false)
         if MF and MF.getMoodle then
