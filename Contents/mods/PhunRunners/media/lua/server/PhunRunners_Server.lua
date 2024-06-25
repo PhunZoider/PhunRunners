@@ -3,10 +3,6 @@ if not isServer() then
 end
 local PhunRunners = PhunRunners
 
-function PhunRunners:setDoRun(value)
-    self.doRun = value
-end
-
 local Commands = {}
 
 Commands.updateStats = function(playerObj, args)

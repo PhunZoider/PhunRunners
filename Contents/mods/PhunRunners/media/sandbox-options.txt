@@ -1,0 +1,49 @@
+VERSION = 1,
+
+option PhunRunners.PhunRunnersVolume
+{ 
+    type = integer, 
+    default = 10, 
+    min = 1,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersVolume
+}
+
+option PhunRunners.PhunRunnersStartTimeBase
+{ 
+    type = integer, 
+    default = 0, 
+    min = 0,
+    max = 23,
+    page=PhunRunners,
+    translation = PhunRunnersStartTimeBase
+}
+
+option PhunRunners.PhunRunnersEndTimeBase
+{ 
+    type = integer, 
+    default = 6, 
+    min = 0,
+    max = 24,
+    page=PhunRunners,
+    translation = PhunRunnersEndTimeBase
+}
+
+option PhunRunners.PhunRunnersShowMoodle
+{ 
+    type = boolean, 
+    default = true, 
+    page = PhunMart, 
+    translation = PhunRunnersShowMoodle
+}
+
+option PhunRunners.PhunRunnersSprinterVolume
+{ 
+    type = integer, 
+    default = 25, 
+    min = 1,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersSprinterVolume
+}

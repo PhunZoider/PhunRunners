@@ -19,7 +19,7 @@ PhunRunners = {
     cycles = {{
         month = 1,
         day = 1,
-        startHour = 8,
+        startHour = 19,
         endHour = 6
     }, {
         month = 4,
@@ -130,7 +130,7 @@ PhunRunners = {
         OnPhunRunnersZedDied = "OnPhunRunnersZedDied",
         OnPhunRunnersUIOpened = "OnPhunRunnersUIOpened",
         OnPhunRunnersCycleChange = "OnPhunRunnersCycleChange",
-        OnPhunRunnersPlayerUpdated = "OnPhunRunnersPlayerUpdated",
+        OnPhunRunnersPlayerUpdated = "OnPhunRunnersPlayerUpdated"
     }
 }
 

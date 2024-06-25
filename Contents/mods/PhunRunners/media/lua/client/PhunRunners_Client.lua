@@ -3,6 +3,7 @@ if isServer() then
 end
 local PhunRunners = PhunRunners
 local PhunZones = PhunZones
+local sandbox = SandboxVars.PhunRunners
 
 local MF = MF;
 local SPRINT = 1
@@ -13,7 +14,18 @@ function PhunRunners:makeSprint(zed)
     getSandboxOptions():set("ZombieLore.Speed", SPRINT)
     zed:makeInactive(false);
     getSandboxOptions():set("ZombieLore.Speed", NORMAL)
-    zed:playSound("PhunRunners_" .. ZombRand(1, 6))
+    local soundName = "PhunRunners_" .. ZombRand(1, 6)
+
+    -- zed:playSound(soundName):setVolume(vol);
+    if zed:getEmitter():isPlaying(soundName) then
+        return
+    end
+
+    local vol = (sandbox.PhunRunnersSprinterVolume or 25) * .01
+    local soundEmitter = getWorld():getFreeEmitter()
+    local hnd = soundEmitter:playSound(soundName, zed:getX(), zed:getY(), zed:getZ())
+    soundEmitter:setVolume(hnd, vol)
+
     triggerEvent(self.events.OnSprinterSpottedPlayer, zed, target)
 end
 
@@ -159,6 +171,8 @@ function PhunRunners:updatePlayer(playerObj)
         for _, mod in pairs(timeModifiers) do
             if totalHours >= mod.hours then
                 timeModifier = mod
+            else
+                break
             end
         end
         local spawnSprinters = true
@@ -176,37 +190,48 @@ function PhunRunners:updatePlayer(playerObj)
         end
         local currentData = playerObj:getModData().PhunRunners
 
+        local doUpdate = false
+        if currentData.spawnSprinters ~= spawnSprinters then
+            -- toggle sprinters
+            currentData.spawnSprinters = spawnSprinters
+            doUpdate = true
+        end
+
         currentData.location = location
         currentData.timeModifier = timeModifier
         currentData.charHours = charHours
         currentData.totalHours = totalHours
-        currentData.spawnSprinters = spawnSprinters
         currentData.risk = risk
         currentData.moon = moon
         currentData.difficulty = difficulty
         triggerEvent(self.events.OnPhunRunnersPlayerUpdated, playerObj, currentData)
         self:updateMoodle(playerObj)
+        if doUpdate then
+            self:updateState()
+        end
     end
 end
 
--- determins if sprinters should be active or not
+-- determines if sprinters should be active or not
 function PhunRunners:updateState()
     local currentState = self.doRun
     local gt = getGameTime()
     local hour = gt:getHour()
     local cycle = self.currentCycle
-    if not (hour <= cycle.startHour and hour >= cycle.endHour) then
-        if not self.doRun then
-            self.doRun = true
-            triggerEvent(self.events.OnPhunRunnersStarting)
-            PhunRunners:updatePlayers()
-        end
-    else
-        -- should now be inactive. Are we?
-        if self.doRun then
-            self.doRun = false
-            triggerEvent(self.events.OnPhunRunnersEnding)
-            PhunRunners:updatePlayers()
+    if cycle then
+        if not (hour <= (cycle.startHour or 0) and hour >= (cycle.endHour or 0)) then
+            if not self.doRun then
+                self.doRun = true
+                triggerEvent(self.events.OnPhunRunnersStarting)
+                PhunRunners:updatePlayers()
+            end
+        else
+            -- should now be inactive. Are we?
+            if self.doRun then
+                self.doRun = false
+                triggerEvent(self.events.OnPhunRunnersEnding)
+                PhunRunners:updatePlayers()
+            end
         end
     end
 end
@@ -308,16 +333,12 @@ Events.OnZombieUpdate.Add(function(z)
     PhunRunners:updateZed(z)
 end);
 
-Events[PhunZones.events.OnPhunZonesPlayerLocationChanged].Add(
-    function(playerObj, location, old)
-        PhunRunners:updatePlayer(playerObj)
-    end)
-
 Events[PhunRunners.events.OnPhunRunnersStarting].Add(function()
     for i = 1, getOnlinePlayers():size() do
         local playerObj = getOnlinePlayers():get(i - 1)
         PhunRunners:updatePlayer(playerObj)
-        getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(0.25);
+        local vol = (sandbox.PhunRunnersVolume or 15) * .01
+        getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(vol);
         -- show moodle?
         PhunRunnersUI.OnOpenPanel(playerObj, true)
         if MF and MF.getMoodle then
@@ -330,7 +351,8 @@ Events[PhunRunners.events.OnPhunRunnersEnding].Add(function()
     for i = 1, getOnlinePlayers():size() do
         local playerObj = getOnlinePlayers():get(i - 1)
         PhunRunners:updatePlayer(playerObj)
-        getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(0.25);
+        local vol = (sandbox.PhunRunnersVolume or 15) * .01
+        getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(vol);
         -- hide moodle?
         PhunRunnersUI.OnOpenPanel(playerObj, false)
         if MF and MF.getMoodle then
@@ -338,3 +360,10 @@ Events[PhunRunners.events.OnPhunRunnersEnding].Add(function()
         end
     end
 end)
+
+if PhunZones and PhunZones.events then
+    Events[PhunZones.events.OnPhunZonesPlayerLocationChanged].Add(
+        function(playerObj, location, old)
+            PhunRunners:updatePlayer(playerObj)
+        end)
+end

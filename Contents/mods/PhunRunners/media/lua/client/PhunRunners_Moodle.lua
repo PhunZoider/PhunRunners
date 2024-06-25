@@ -67,14 +67,18 @@ function PhunRunners:updateMoodle(playerObj)
         return
     end
 
+    local playerNumber = playerObj:getPlayerNum()
+    local moodle = MF.getMoodle(PhunRunners.name, playerObj:getPlayerNum())
+
+    if not SandboxVars.PhunRunnersShowMoodle then
+        moodle:suspend()
+        return
+    end
     local data = self:getSummary(playerObj)
 
     if not data then
         return
     end
-
-    local playerNumber = playerObj:getPlayerNum()
-    local moodle = MF.getMoodle(PhunRunners.name, playerObj:getPlayerNum())
 
     local riskTitle = data.title
     local riskDesc = data.description
