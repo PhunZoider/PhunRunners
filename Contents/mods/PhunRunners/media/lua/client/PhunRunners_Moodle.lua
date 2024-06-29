@@ -18,47 +18,6 @@ function PhunRunners:updateMoodles()
     end
 end
 
-function PhunRunners:getSummary(playerObj)
-
-    local playerNumber = playerObj:getPlayerNum()
-    local currentData = getSpecificPlayer(playerNumber):getModData().PhunRunners
-    if not currentData or not currentData.location then
-        return
-    end
-
-    local riskTitle = currentData.location.title
-    if currentData.location.subtitle then
-        riskTitle = riskTitle .. " (" .. currentData.location.subtitle .. ")\n"
-    else
-        riskTitle = riskTitle .. "\n"
-    end
-    local riskDesc = "";
-    if currentData.location and currentData.location.title then
-        riskDesc = getText("IGUI_PhunRunners_RiskLevel", currentData.risk) .. "\n"
-        riskDesc = riskDesc .. getText("IGUI_PhunRunners_RiskFromArea", currentData.difficulty) .. "\n"
-        if currentData.moon > 1 then
-            riskDesc = riskDesc .. getText("IGUI_PhunRunners_RiskFromMoon", (currentData.moon + 1) / 2) .. "\n"
-        end
-        if currentData.timeModifier then
-            riskDesc = riskDesc .. getText("IGUI_PhunRunners_RiskFromTime", currentData.timeModifier.modifier) .. "\n"
-        end
-    end
-    if currentData.spawnSprinters and self.doRun then
-        riskDesc = riskDesc .. "\n" .. getText("IGUI_PhunRunners_ZedsAreRestless") .. "\n"
-    else
-        riskDesc = riskDesc .. "\n" .. getText("IGUI_PhunRunners_ZedsAreSettling") .. "\n"
-    end
-
-    return {
-        title = riskTitle,
-        description = riskDesc,
-        spawnSprinters = currentData.spawnSprinters == true,
-        risk = currentData.risk,
-        difficulty = currentData.difficulty,
-        restless = currentData.spawnSprinters and self.doRun
-    }
-end
-
 -- shows/hides/updates the danger moodle for a player
 -- Should be called whenever a player is updated
 function PhunRunners:updateMoodle(playerObj)

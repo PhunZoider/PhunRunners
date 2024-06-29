@@ -7,7 +7,7 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_SCALE = FONT_HGT_SMALL / 14
 
-function PhunRunnersUI.OnOpenPanel(playerObj, isRestless)
+function PhunRunnersUI.OnOpenPanel(playerObj)
 
     local core = getCore()
     local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 14
@@ -20,8 +20,6 @@ function PhunRunnersUI.OnOpenPanel(playerObj, isRestless)
     PhunRunnersUI.instance = PhunRunnersUI:new(x, 50, width, height, playerObj);
     PhunRunnersUI.instance:initialise();
     PhunRunnersUI.instance:instantiate();
-    PhunRunnersUI.instance.player = playerObj
-    PhunRunnersUI.instance.isRestless = isRestless
     PhunRunnersUI.instance:addToUIManager();
     triggerEvent(PhunRunners.events.OnPhunRunnersUIOpened, PhunRunnersUI.instance)
     return PhunRunnersUI.instance;
@@ -40,13 +38,15 @@ end
 
 function PhunRunnersUI:render()
 
-    if self.isRestless ~= nil then
-        local data = self.player:getModData().PhunRunners;
-
-        local txt = self.isRestless and getText("IGUI_PhunRunners_ZedsAreRestless") or
-                        getText("IGUI_PhunRunners_ZedsAreSettling");
+    local data = PhunRunners:getPlayerData(self.player)
+    local txt = nil
+    if data.isRestless and data.risk > 0 then
+        txt = self.isRestless and getText("IGUI_PhunRunners_ZedsAreRestless")
+    elseif data.isRestless == false and data.risk > 0 then
+        txt = self.isRestless and getText("IGUI_PhunRunners_ZedsAreSettling")
+    end
+    if txt then
         self:drawTextCentre(txt, self.width / 2, 75, 255, 255, 240, self.alphaBits, UIFont.NewLarge);
-
         if getTimestamp() > self.autoCloseTimestamp then
             self.alphaBits = self.alphaBits - 0.05
             if self.alphaBits <= 0 then
@@ -101,6 +101,6 @@ function PhunRunnersUI:new(x, y, width, height, player)
     o.zOffsetMediumFont = 20;
     o.zOffsetSmallFont = 6;
     o.moveWithMouse = false;
-    o.isRestless = false;
+    o.player = player;
     return o;
 end

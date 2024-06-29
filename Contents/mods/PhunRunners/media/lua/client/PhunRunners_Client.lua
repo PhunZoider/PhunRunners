@@ -3,7 +3,12 @@ if isServer() then
 end
 local PhunRunners = PhunRunners
 local PhunZones = PhunZones
+local PhunStats = PhunStats
 local sandbox = SandboxVars.PhunRunners
+
+local receivedCycles = false
+local receievedModified = false
+local receivedAllData = false
 
 local MF = MF;
 local SPRINT = 1
@@ -79,7 +84,7 @@ function PhunRunners:updateZed(zed)
         return
     end
 
-    local playerData = player:getModData().PhunRunners or {}
+    local playerData = self:getPlayerData(player)
 
     if (not self.doRun and zData.sprinting) or (zData.sprinting and not playerData.spawnSprinters) then
         -- globally, its morning so stop sprinting
@@ -158,120 +163,106 @@ function PhunRunners:updatePlayer(playerObj)
     if not self.data.players then
         self.data.players = {}
     end
-    local name = playerObj:getUsername()
-    if self.data.players[name] then
-        local cycle = self.currentCycle
-        local location = PhunZones:getLocation(playerObj)
-        local moon = getClimateMoon():getCurrentMoonPhase()
-        local charHours = playerObj:getHoursSurvived()
-        local totalHours = charHours + self.data.players[name].totalHours or 0
-        local difficulty = location.difficulty
-        local timeModifiers = self.timeModifiers[difficulty] or {}
-        local timeModifier = nil
-        for _, mod in pairs(timeModifiers) do
-            if totalHours >= mod.hours then
-                timeModifier = mod
-            else
-                break
-            end
-        end
-        local spawnSprinters = true
-        local risk = 0
-        if difficulty == 0 or charHours < self.graceOnCharacterCreation or totalHours < self.graceHours or
-            timeModifier.modifier == 0 then
-            -- 0 risk. end of
-            spawnSprinters = false
+    local data = PhunRunners:getPlayerData(playerObj)
+
+    local wasSprinting = data.spawnSprinters == true
+    local wasRestless = data.restless == true
+
+    local cycle = self.currentCycle
+    local location = nil
+    local difficulty = 1
+
+    if PhunZones then
+        location = PhunZones:getLocation(playerObj)
+        difficulty = location.difficulty
+    end
+
+    local moon = getClimateMoon():getCurrentMoonPhase()
+    local charHours = playerObj:getHoursSurvived()
+    local totalHours = charHours
+    if PhunStats then
+        local ps = PhunStats:getPlayerData(playerObj) or {}
+        totalHours = (ps.total or {}).hours or charHours
+    end
+
+    local timeModifiers = self.timeModifiers[difficulty] or {}
+    local timeModifier = nil
+    for _, mod in pairs(timeModifiers) do
+        if totalHours >= (mod or {}).hours or 0 then
+            timeModifier = mod
         else
-            risk = ((moon + 1) / 2) * difficulty + timeModifier.modifier
-        end
-
-        if not playerObj:getModData().PhunRunners then
-            playerObj:getModData().PhunRunners = {}
-        end
-        local currentData = playerObj:getModData().PhunRunners
-
-        local doUpdate = false
-        if currentData.spawnSprinters ~= spawnSprinters then
-            -- toggle sprinters
-            currentData.spawnSprinters = spawnSprinters
-            doUpdate = true
-        end
-
-        currentData.location = location
-        currentData.timeModifier = timeModifier
-        currentData.charHours = charHours
-        currentData.totalHours = totalHours
-        currentData.risk = risk
-        currentData.moon = moon
-        currentData.difficulty = difficulty
-        triggerEvent(self.events.OnPhunRunnersPlayerUpdated, playerObj, currentData)
-        self:updateMoodle(playerObj)
-        if doUpdate then
-            self:updateState()
+            break
         end
     end
-end
+    local spawnSprinters = true
+    local risk = 0
+    if difficulty == 0 or charHours < self.graceOnCharacterCreation or totalHours < self.graceHours or
+        timeModifier.modifier == 0 then
+        -- 0 risk. end of
+        spawnSprinters = false
+    else
+        risk = ((moon + 1) / 2) * difficulty + timeModifier.modifier
+    end
 
--- determines if sprinters should be active or not
-function PhunRunners:updateState()
-    local currentState = self.doRun
+    data.location = location
+    data.timeModifier = timeModifier
+    data.charHours = charHours
+    data.totalHours = totalHours
+    data.risk = risk
+    data.moon = moon
+    data.difficulty = difficulty
+    data.spawnSprinters = spawnSprinters
+
     local gt = getGameTime()
     local hour = gt:getHour()
     local cycle = self.currentCycle
-    if cycle then
-        if not (hour <= (cycle.startHour or 0) and hour >= (cycle.endHour or 0)) then
-            if not self.doRun then
-                self.doRun = true
-                triggerEvent(self.events.OnPhunRunnersStarting)
-                PhunRunners:updatePlayers()
-            end
+    data.restless = not (hour <= (cycle.startHour or 0) and hour >= (cycle.endHour or 0))
+    if data.restless == false then
+        data.spawnSprinters = false
+    end
+
+    print("PhunRunners: " .. playerObj:getUsername() .. " is now " ..
+              (data.spawnSprinters and "eligible" or "not eligible") .. " for sprinters. Restless = " ..
+              tostring(data.restless) .. " Risk = " .. tostring(risk))
+
+    if data.spawnSprinters ~= wasSprinting then
+        if data.spawnSprinters then
+            print("Notifying of start")
+            self:startSprinters(playerObj)
         else
-            -- should now be inactive. Are we?
-            if self.doRun then
-                self.doRun = false
-                triggerEvent(self.events.OnPhunRunnersEnding)
-                PhunRunners:updatePlayers()
-            end
+            print("Notifying of stop")
+            self:stopSprinters(playerObj)
         end
+    end
+
+end
+
+function PhunRunners:ini()
+    if not self.inied then
+        ModData.request(self.name .. "_Modifiers")
+        ModData.request(self.name .. "_Cycles")
     end
 end
 
-local function requestDataOnce()
-    Events.EveryOneMinute.Remove(requestDataOnce)
+local function setup()
+    Events.EveryOneMinute.Remove(setup)
+    PhunRunners:ini()
     for i = 0, getOnlinePlayers():size() - 1 do
         local player = getOnlinePlayers():get(i)
         PhunRunnersUI.OnOpenPanel(player)
         sendClientCommand(player, PhunRunners.name, PhunRunners.commands.requestData, {})
     end
 end
-Events.EveryOneMinute.Add(requestDataOnce)
+Events.EveryOneMinute.Add(setup)
 
 local Commands = {}
 
-Commands[PhunRunners.commands.requestData] = function(data)
-    if not PhunRunners.data then
-        PhunRunners.data = {}
-    end
-    if not PhunRunners.data.players then
-        PhunRunners.data.players = {}
-    end
-    PhunRunners.data.players[data.name] = data.data
-    PhunRunners:refresh()
-    Events.EveryHours.Add(function()
-        PhunRunners:refresh()
-    end)
-end
-
 function PhunRunners:refresh()
-    self:updateCycle()
-    self:updatePlayers()
-    self:updateState()
+    if receievedModified and receivedCycles then
+        self:updateCycle()
+        -- self:updatePlayers()
+    end
 end
-
-Events[PhunRunners.events.OnPhunRunnersCycleChange].Add(function()
-    PhunRunners:updatePlayers()
-    PhunRunners:updateState()
-end)
 
 Events.OnServerCommand.Add(function(module, command, arguments)
     local p = PhunRunners
@@ -290,80 +281,59 @@ Events.OnZombieDead.Add(function(zed)
     end
 end);
 
-local function extract_number(str)
-    -- Normalize the string by removing spaces around commas and ensuring proper decimal points
-    str = string.gsub(str, "%s*,%s*", ",")
-    -- Match the pattern for a number with commas and optional decimal part
-    local number = string.match(str, "[%d,]+%.?%d*")
-    if number then
-        -- Optional: Validate the number format if necessary
-        -- Convert to a number by removing commas
-        number = tonumber(string.gsub(number, ",", ""))
-    end
-    return number
-end
-
 Events.OnPlayerDeath.Add(function(playerObj)
-    local name = playerObj:getUsername()
-    local data = PhunRunners.data[name] or {}
-    if not data.totalHours then
-        data.totalHours = 0
-    end
-    if not data.hours then
-        data.hours = 0
-    end
-    if not data.kills then
-        data.kills = 0
-    end
-    if not data.totalKills then
-        data.totalKills = 0
-    end
-    data.totalHours = data.totalHours + data.hours
-    local gt = getGameTime()
-    local txt = gt:getZombieKilledText(playerObj)
-    local kills = tonumber(string.gsub(txt, "[^%d]", "") or "0")
-
-    data.totalKills = data.totalKills + kills
-    data.hours = 0
-    data.kills = 0
-    sendClientCommand(playerObj, PhunRunners.name, PhunRunners.commands.requestData, data)
+    local data = PhunRunners:getPlayerData(playerObj)
+    data = {}
 end)
 
 Events.OnZombieUpdate.Add(function(z)
     PhunRunners:updateZed(z)
 end);
 
-Events[PhunRunners.events.OnPhunRunnersStarting].Add(function()
-    for i = 1, getOnlinePlayers():size() do
-        local playerObj = getOnlinePlayers():get(i - 1)
-        PhunRunners:updatePlayer(playerObj)
-        local vol = (sandbox.PhunRunnersVolume or 15) * .01
-        getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(vol);
-        -- show moodle?
-        PhunRunnersUI.OnOpenPanel(playerObj, true)
-        if MF and MF.getMoodle then
-            MF.getMoodle(PhunRunners.name, playerObj:getPlayerNum()):activate()
-        end
+Events[PhunRunners.events.OnPunRunnersInitialized].Add(function(playerObj, data)
+
+    Events[PhunRunners.events.OnPhunRunnersCycleChange].Add(function()
+        print("PhunRunners: OnPhunRunnersCycleChange")
+
+        PhunRunners:updatePlayers()
+        -- PhunRunners:updateState()
+    end)
+
+    Events.OnGameStart.Add(function()
+        print("PhunRunners: OnGameStart")
+        PhunRunners:calculateCycle()
+        -- PhunRunners:refresh()
+    end)
+
+    if PhunZones and PhunZones.events then
+        Events[PhunZones.events.OnPhunZonesPlayerLocationChanged].Add(
+            function(playerObj, location, old)
+                print("PhunRunners: OnPhunZonesPlayerLocationChanged")
+                PhunRunners:updatePlayer(playerObj)
+            end)
     end
+
+    Events.EveryHours.Add(function()
+        print("PhunRunners: EveryHours")
+        PhunRunners:refresh()
+    end)
+
 end)
 
-Events[PhunRunners.events.OnPhunRunnersEnding].Add(function()
-    for i = 1, getOnlinePlayers():size() do
-        local playerObj = getOnlinePlayers():get(i - 1)
-        PhunRunners:updatePlayer(playerObj)
-        local vol = (sandbox.PhunRunnersVolume or 15) * .01
-        getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(vol);
-        -- hide moodle?
-        PhunRunnersUI.OnOpenPanel(playerObj, false)
-        if MF and MF.getMoodle then
-            MF.getMoodle(PhunRunners.name, playerObj:getPlayerNum()):suspend()
-        end
-    end
-end)
+Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
 
-if PhunZones and PhunZones.events then
-    Events[PhunZones.events.OnPhunZonesPlayerLocationChanged].Add(
-        function(playerObj, location, old)
-            PhunRunners:updatePlayer(playerObj)
-        end)
-end
+    if tableName == PhunRunners.name .. "_Cycles" and type(tableData) == "table" then
+        PhunRunners.cycles = tableData
+        receivedCycles = true
+        PhunRunners:refresh()
+    elseif tableName == PhunRunners.name .. "_Modifiers" and type(tableData) == "table" then
+        PhunRunners.timeModifiers = tableData
+        receievedModified = true
+        PhunRunners:refresh()
+    end
+    if receievedModified and receivedCycles and receivedAllData == false then
+        receivedAllData = true
+        triggerEvent(PhunRunners.events.OnPunRunnersInitialized)
+    end
+
+end)

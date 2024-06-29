@@ -3,35 +3,24 @@ if not isServer() then
 end
 local PhunRunners = PhunRunners
 
+function PhunRunners:reload()
+    self.cycles = PhunTools:loadTable("PhunRunners_Cycles.lua")
+    ModData.add(self.name .. "_Cycles", self.cycles)
+    self.timeModifiers = PhunTools:loadTable("PhunRunners_Modifiers.lua")
+    ModData.add(self.name .. "_Modifiers", self.timeModifiers)
+end
+
+function PhunRunners:ini()
+    if not self.inied then
+        self.inied = true
+        print("------------- SERVER INITIALIZING PHUNRUNNERS ---------------")
+        self.timeModifiers = ModData.getOrCreate(self.name .. "_Modifiers")
+        self.cycles = ModData.getOrCreate(self.name .. "_Cycles")
+        triggerEvent(self.events.OnPunRunnersInitialized)
+    end
+end
+
 local Commands = {}
-
-Commands.updateStats = function(playerObj, args)
-    local name = playerObj:getUsername()
-    local data = PhunRunners.data[name]
-    if not data then
-        data = {
-            hours = 0,
-            totalHours = 0
-        }
-        PhunRunners.data[name] = data
-    end
-    data.hours = playerObj:getHoursSurvived()
-end
-
-Commands[PhunRunners.commands.requestData] = function(playerObj, args)
-    local name = playerObj:getUsername()
-    local data = PhunRunners.data[name] or {}
-    if not data.totalHours then
-        data.totalHours = 0
-    end
-    if not data.hours then
-        data.hours = 0
-    end
-    sendServerCommand(playerObj, PhunRunners.name, PhunRunners.commands.requestData, {
-        name = name,
-        data = data
-    })
-end
 
 Events.OnClientCommand.Add(function(module, command, playerObj, arguments)
     if module == PhunRunners.name and Commands[command] then
@@ -39,17 +28,7 @@ Events.OnClientCommand.Add(function(module, command, playerObj, arguments)
     end
 end)
 
-Events.EveryTenMinutes.Add(function()
-    for i = 0, getOnlinePlayers():size() - 1 do
-        local player = getOnlinePlayers():get(i)
-        local name = player:getUsername()
-        if not PhunRunners.data[name] then
-            PhunRunners.data[name] = {
-                hours = 0,
-                totalHours = 0
-            }
-        end
-        PhunRunners.data[name].hours = player:getHoursSurvived()
-    end
+Events[PhunRunners.events.OnPunRunnersInitialized].Add(function(playerObj, data)
+    PhunRunners:reload()
 end)
 
