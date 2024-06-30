@@ -66,32 +66,33 @@ function PhunRunners:getSummary(playerObj)
         return
     end
 
-    local riskTitle = currentData.location.title
+    local riskTitle = currentData.location.title or "Wilderness"
     if currentData.location.subtitle then
-        riskTitle = riskTitle .. " (" .. currentData.location.subtitle .. ")\n"
+        riskTitle = riskTitle .. "\n" .. currentData.location.subtitle .. "\n"
     else
         riskTitle = riskTitle .. "\n"
     end
-    local riskDesc = "";
+    local riskDesc = {};
     if currentData.location and currentData.location.title then
-        riskDesc = getText("IGUI_PhunRunners_RiskLevel", currentData.risk) .. "\n"
-        riskDesc = riskDesc .. getText("IGUI_PhunRunners_RiskFromArea", currentData.difficulty) .. "\n"
+        table.insert(riskDesc, getText("IGUI_PhunRunners_RiskLevel", currentData.risk))
+        table.insert(riskDesc, getText("IGUI_PhunRunners_RiskFromArea", currentData.difficulty))
         if currentData.moon > 1 then
-            riskDesc = riskDesc .. getText("IGUI_PhunRunners_RiskFromMoon", (currentData.moon + 1) / 2) .. "\n"
+            table.insert(riskDesc, getText("IGUI_PhunRunners_RiskFromMoon", (currentData.moon + 1) / 2))
         end
         if currentData.timeModifier then
-            riskDesc = riskDesc .. getText("IGUI_PhunRunners_RiskFromTime", currentData.timeModifier.modifier) .. "\n"
+            table.insert(riskDesc, getText("IGUI_PhunRunners_RiskFromTime", currentData.timeModifier.modifier))
         end
     end
-    if currentData.spawnSprinters and self.doRun then
-        riskDesc = riskDesc .. "\n" .. getText("IGUI_PhunRunners_ZedsAreRestless") .. "\n"
+    table.insert(riskDesc, "")
+    if currentData.restless then
+        table.insert(riskDesc, getText("IGUI_PhunRunners_ZedsAreRestless"))
     else
-        riskDesc = riskDesc .. "\n" .. getText("IGUI_PhunRunners_ZedsAreSettling") .. "\n"
+        table.insert(riskDesc, getText("IGUI_PhunRunners_ZedsAreSettling"))
     end
 
     return {
         title = riskTitle,
-        description = riskDesc,
+        description = table.concat(riskDesc, "\n"),
         spawnSprinters = currentData.spawnSprinters == true,
         risk = currentData.risk,
         difficulty = currentData.difficulty,
@@ -101,11 +102,10 @@ end
 
 -- Player is eligible for sprinters to start, but indiviual settings may prevent it
 function PhunRunners:startSprinters(playerObj, skipNotification)
-
     local vol = (SandboxVars.PhunRunners.PhunRunnersVolume or 15) * .01
     getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(vol);
     -- show moodle?
-    PhunRunnersUI.OnOpenPanel(playerObj, true)
+    PhunRunnersUI.OnOpenPanel(playerObj)
     if MF and MF.getMoodle then
         MF.getMoodle(self.name, playerObj:getPlayerNum()):activate()
     end
@@ -113,11 +113,10 @@ function PhunRunners:startSprinters(playerObj, skipNotification)
 end
 
 function PhunRunners:stopSprinters(playerObj, skipNotification)
-
     local vol = (SandboxVars.PhunRunners.PhunRunnersVolume or 15) * .01
     getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(vol);
     -- show moodle?
-    PhunRunnersUI.OnOpenPanel(playerObj, false)
+    PhunRunnersUI.OnOpenPanel(playerObj)
     if MF and MF.getMoodle then
         MF.getMoodle(self.name, playerObj:getPlayerNum()):activate()
     end

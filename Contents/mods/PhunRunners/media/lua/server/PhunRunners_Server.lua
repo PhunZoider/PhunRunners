@@ -13,7 +13,6 @@ end
 function PhunRunners:ini()
     if not self.inied then
         self.inied = true
-        print("------------- SERVER INITIALIZING PHUNRUNNERS ---------------")
         self.timeModifiers = ModData.getOrCreate(self.name .. "_Modifiers")
         self.cycles = ModData.getOrCreate(self.name .. "_Cycles")
         triggerEvent(self.events.OnPunRunnersInitialized)

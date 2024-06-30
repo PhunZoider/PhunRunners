@@ -39,11 +39,11 @@ end
 function PhunRunnersUI:render()
 
     local data = PhunRunners:getPlayerData(self.player)
-    local txt = nil
-    if data.isRestless and data.risk > 0 then
-        txt = self.isRestless and getText("IGUI_PhunRunners_ZedsAreRestless")
-    elseif data.isRestless == false and data.risk > 0 then
-        txt = self.isRestless and getText("IGUI_PhunRunners_ZedsAreSettling")
+    local txt = nil -- getText("IGUI_PhunRunners_ZedsAreSettling")
+    if data.restless == true and data.spawnSprinters == true then
+        txt = getText("IGUI_PhunRunners_ZedsAreRestless")
+    elseif data.restless == false then
+        txt = getText("IGUI_PhunRunners_ZedsAreSettling")
     end
     if txt then
         self:drawTextCentre(txt, self.width / 2, 75, 255, 255, 240, self.alphaBits, UIFont.NewLarge);
@@ -58,6 +58,8 @@ function PhunRunnersUI:render()
                 self.alphaBits = 1
             end
         end
+    else
+        self:close()
     end
 end
 
