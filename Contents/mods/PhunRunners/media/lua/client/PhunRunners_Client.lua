@@ -20,7 +20,9 @@ function PhunRunners:makeSprint(zed)
     zed:makeInactive(false);
     getSandboxOptions():set("ZombieLore.Speed", NORMAL)
     local soundName = "PhunRunners_" .. ZombRand(1, 6)
-
+    zed:getModData().PhunRunners = {
+        sprinting = true
+    }
     -- zed:playSound(soundName):setVolume(vol);
     if zed:getEmitter():isPlaying(soundName) then
         return
