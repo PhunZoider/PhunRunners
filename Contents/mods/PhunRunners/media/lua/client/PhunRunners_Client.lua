@@ -23,6 +23,8 @@ function PhunRunners:makeSprint(zed)
     zed:getModData().PhunRunners = {
         sprinting = true
     }
+    print("-- y --")
+    PhunTools:printTable(zed:getModData())
     -- zed:playSound(soundName):setVolume(vol);
     if zed:getEmitter():isPlaying(soundName) then
         return
@@ -54,7 +56,7 @@ function PhunRunners:updateZed(zed)
     if zed:getModData().PhunRunners == nil then
         zed:getModData().PhunRunners = {}
     end
-    local zData = zed:getModData().PhunRunners or {}
+    local zData = zed:getModData().PhunRunners
 
     zData.ticks = zData.ticks or 0;
     if zData.ticks < self.ticks then
@@ -260,7 +262,7 @@ Events.OnZombieDead.Add(function(zed)
     local data = zed:getModData().PhunRunners
     if data then
         if data.sprinting then
-            triggerEvent(PhunRunners.events.OnPhunRunnersZedDied, zed)
+            triggerEvent(PhunRunners.events.OnPhunRunnersZedDied, zed:getAttackedBy(), zed)
         end
     end
 end);
