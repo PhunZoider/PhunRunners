@@ -319,3 +319,13 @@ Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
     end
 
 end)
+
+-- Events.OnDusk.Add(function()
+--     getPlayer():Say("Dusk")
+--     print("Dusk " .. tostring(getGameTime():getHour()))
+-- end)
+
+-- Events.OnDawn.Add(function()
+--     getPlayer():Say("Dawn")
+--     print("Dawn " .. tostring(getGameTime():getHour()))
+-- end)
