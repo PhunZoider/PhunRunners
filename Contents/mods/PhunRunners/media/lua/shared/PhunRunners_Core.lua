@@ -1,30 +1,29 @@
-local phunStats = nil
 PhunRunners = {
     inied = false,
     name = "PhunRunners",
-    commands = {
-        dataLoaded = "dataLoaded",
-        reload = "reload",
-        requestData = "requestPhunRunnersData",
-        doRun = "doRun"
+    commands = {},
+    settings = {
+        tickDeffer = 50,
+        graceTotalHours = 24,
+        graceHours = 1,
+        slowInLight = 0.7,
+        zones = {{
+            intensity = 2
+        }, {
+            intensity = 5
+        }, {
+            intensity = 10
+        }, {
+            intensity = 15
+        }},
+        moon = {0.5, 0.8, 0.9, 1.1, 2, 1.1, 0.9, 0.8}
+
     },
-    doRun = nil,
-    ticks = 100,
-    graceHours = 48,
-    graceOnCharacterCreation = 1,
+    zeds = {},
     players = {},
-    currentCycle = nil,
-    cycles = {},
-    timeModifiers = {},
     events = {
-        OnPunRunnersInitialized = "OnPunRunnersInitialized",
-        OnPhunRunnersStarting = "OnPhunRunnersStarting",
-        OnPhunRunnersEnding = "OnPhunRunnersEnding",
-        OnSprinterSpottedPlayer = "OnPhunRunnersSprinterSpottedPlayer",
-        OnSprinterLostPlayer = "OnPhunRunnerSprinterLostPlayer",
+        OnSprinterSpottedPlayer = "OnPhunRunnerSprinterSpottedPlayer",
         OnPhunRunnersZedDied = "OnPhunRunnersZedDied",
-        OnPhunRunnersUIOpened = "OnPhunRunnersUIOpened",
-        OnPhunRunnersCycleChange = "OnPhunRunnersCycleChange",
         OnPhunRunnersPlayerUpdated = "OnPhunRunnersPlayerUpdated"
     }
 }
@@ -33,6 +32,26 @@ for _, event in pairs(PhunRunners.events) do
     if not Events[event] then
         LuaEventManager.AddEvent(event)
     end
+end
+
+function PhunRunners:getZedData(zed)
+
+    if not self.zeds[tostring(zed:getOnlineID())] then
+        self.zeds[tostring(zed:getOnlineID())] = {
+            sprinting = false,
+            tested = false,
+            created = getTimestamp(),
+            modified = getTimestamp(),
+            targetName = nil,
+            isSupressed = false,
+            ticks = nil
+        }
+    end
+    return self.zeds[tostring(zed:getOnlineID())]
+end
+
+function PhunRunners:cleanZedData()
+
 end
 
 function PhunRunners:getPlayerData(playerObj)
@@ -58,108 +77,214 @@ function PhunRunners:getPlayerData(playerObj)
     end
 end
 
-function PhunRunners:getSummary(playerObj)
+function PhunRunners:updateEnvironment()
 
-    local playerNumber = playerObj:getPlayerNum()
-    local currentData = self:getPlayerData(playerObj)
-    if not currentData or not currentData.location then
+    if self.env == nil then
+        -- caches the current environment
+        self.env = self:getEnvironment()
         return
     end
 
-    local riskTitle = currentData.location.title or "Wilderness"
-    if currentData.location.subtitle then
-        riskTitle = riskTitle .. "\n" .. currentData.location.subtitle .. "\n"
-    else
-        riskTitle = riskTitle .. "\n"
-    end
-    local riskDesc = {};
-    if currentData.location and currentData.location.title then
-        table.insert(riskDesc, getText("IGUI_PhunRunners_RiskLevel", currentData.risk))
-        table.insert(riskDesc, getText("IGUI_PhunRunners_RiskFromArea", currentData.difficulty))
-        if currentData.moon > 1 then
-            table.insert(riskDesc, getText("IGUI_PhunRunners_RiskFromMoon", (currentData.moon + 1) / 2))
-        end
-        if currentData.timeModifier then
-            table.insert(riskDesc, getText("IGUI_PhunRunners_RiskFromTime", currentData.timeModifier.modifier))
-        end
-    end
-    table.insert(riskDesc, "")
-    if currentData.restless then
-        table.insert(riskDesc, getText("IGUI_PhunRunners_ZedsAreRestless"))
-    else
-        table.insert(riskDesc, getText("IGUI_PhunRunners_ZedsAreSettling"))
+    local climate = getClimateManager()
+    local lightIntensity = climate:getDayLightStrength()
+    local fogIntensity = climate:getFogIntensity()
+
+    if self.env.light.intensity == lightIntensity and self.env.fog.intensity == fogIntensity then
+        -- no material change to env
+        return
     end
 
-    return {
-        title = riskTitle,
-        description = table.concat(riskDesc, "\n"),
-        spawnSprinters = currentData.spawnSprinters == true,
-        risk = currentData.risk,
-        difficulty = currentData.difficulty,
-        restless = currentData.spawnSprinters and self.doRun
-    }
+    -- caches the current environment
+    self.env = self:getEnvironment()
+    return self.env
+
 end
 
--- Player is eligible for sprinters to start, but indiviual settings may prevent it
-function PhunRunners:startSprinters(playerObj, skipNotification)
-    local vol = (SandboxVars.PhunRunners.PhunRunnersVolume or 15) * .01
-    getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(vol);
-    -- show moodle?
-    PhunRunnersUI.OnOpenPanel(playerObj)
-    if MF and MF.getMoodle then
-        MF.getMoodle(self.name, playerObj:getPlayerNum()):activate()
+local moonPhaseNames = {"New Moon", "Crescent Moon", "First Quarter", "Gibbous Moon", "Full Moon", "Gibbous Moon",
+                        "Last Quarter", "Waning Crescent"}
+function PhunRunners:getEnvironment(refresh)
+
+    local climate = getClimateManager()
+    local gameTime = getGameTime()
+
+    local lightStrength = climate:getDayLightStrength()
+    local fogStrength = climate:getFogIntensity()
+
+    local settings = SandboxVars.PhunRunners
+    local season = climate:getSeason()
+
+    local fogIntensity = math.floor((fogStrength * 100) + 0.5)
+
+    -- convert to whole number after offsetting for fog
+    local lightIntensity = math.floor((lightStrength * 100) + 0.5)
+
+    if lightIntensity < 0 then
+        lightIntensity = 0
     end
-    -- end
-end
 
-function PhunRunners:stopSprinters(playerObj, skipNotification)
-    local vol = (SandboxVars.PhunRunners.PhunRunnersVolume or 15) * .01
-    getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(vol);
-    -- show moodle?
-    PhunRunnersUI.OnOpenPanel(playerObj)
-    if MF and MF.getMoodle then
-        MF.getMoodle(self.name, playerObj:getPlayerNum()):activate()
+    local adjustedLightIntensity = lightIntensity - fogIntensity
+    if adjustedLightIntensity < 0 then
+        adjustedLightIntensity = 0
     end
-    -- end
-end
 
-function PhunRunners:getPlayersRiskofSprinters(playerObj)
-    local currentData = playerObj:getModData().PhunRunners
+    local lightValue = 0
 
-    if not currentData or not currentData.location then
-        return {
-            risk = 0
+    local m = getClimateMoon()
+    local moonPhase = m:getCurrentMoonPhase()
+    local moonPhaseName = moonPhaseNames[moonPhase + 1]
+
+    local hours, minutes = gameTime:getHour(), gameTime:getMinutes()
+    local toMins = (hours * 60) + minutes
+    local dusk = gameTime:getDusk()
+    local toDusk = (dusk * 60)
+    local dawn = gameTime:getDawn()
+    local toDawn = (dawn * 60)
+    local timeToDusk = toDusk - toMins
+    local timeToDawn = toDawn - toMins
+    if timeToDusk < 0 then
+        timeToDusk = 1440 + timeToDusk
+    end
+    if timeToDawn < 0 then
+        timeToDawn = 1440 + timeToDawn
+    end
+
+    local results = {
+        season = climate:getSeasonName(),
+        value = (100 - adjustedLightIntensity),
+        light = {
+            adjustedLightIntensity = adjustedLightIntensity,
+            intensity = lightIntensity
+        },
+        fog = {
+            intensity = fogIntensity
+        },
+        moon = {
+            phase = moonPhase,
+            category = moonPhaseName
+        },
+        info = {
+            night = gameTime:getNightsSurvived(),
+            hour = hours,
+            minute = minutes,
+            dusk = dusk,
+            dawn = dawn,
+            timeToDusk = timeToDusk,
+            timeToDawn = timeToDawn
         }
-    end
+    }
+    return results
 end
 
-function PhunRunners:getPlayerRisk(playerObj)
+function PhunRunners:updatePlayer(playerObj)
 
-    local currentData = playerObj:getModData().PhunRunners
-
-    if not currentData or not currentData.location then
-        return 0
+    if not playerObj or not playerObj:isLocalPlayer() then
+        return
     end
 
-    return currentData.risk or 0
+    local name = playerObj:getUsername()
+    local playerData = self:getPlayerData(name)
+    local env = self.env
+    local zone = PhunZones.players[name] or {
+        difficulty = 0
+    }
+    local pstats = PhunStats:getPlayerData(name) or {
+        total = {
+            hours = 0
+        }
+    }
+
+    local zoneDifficulty = zone.difficulty
+    local hours = pstats.total.hours or 0
+    local totalKills = pstats.total.kills or 0
+    local totalSprinters = pstats.total.sprinters or 0
+    local totalDeaths = pstats.total.deaths or 0
+    local charHours = pstats.current.hours or 0
+
+    local pd = {
+        risk = 0,
+        spawnSprinters = false,
+        restless = env.value > 30
+    }
+
+    if zoneDifficulty == 0 or charHours < self.settings.graceHours or hours < self.settings.graceTotalHours then
+        pd.risk = 0
+        pd.spawnSprinters = false
+    else
+
+        local zoneRisk = 0
+        if zoneDifficulty > 4 then
+            zoneRisk = 100
+        elseif zoneDifficulty > 3 then
+            zoneRisk = 15
+        elseif zoneDifficulty > 2 then
+            zoneRisk = 10
+        elseif zoneDifficulty > 1 then
+            zoneRisk = 5
+        end
+
+        local timerRisk = 0
+        if hours > 1000 then
+            timerRisk = 18
+        elseif hours > 500 then
+            timerRisk = 12
+        elseif hours > 250 then
+            timerRisk = 8
+        elseif hours > 100 then
+            timerRisk = 4
+        elseif hours > 50 then
+            timerRisk = 2
+        end
+
+        local sprinterKillRisk = 0
+        if totalSprinters > 100 then
+            timerRisk = 12
+        elseif totalSprinters > 50 then
+            timerRisk = 8
+        elseif totalSprinters > 25 then
+            timerRisk = 6
+        elseif totalSprinters > 10 then
+            timerRisk = 4
+        elseif totalSprinters > 5 then
+            timerRisk = 2
+        end
+
+        if zoneRisk == 0 or timerRisk == 0 then
+            -- no risk
+            pd.risk = 0
+            pd.spawnSprinters = false
+            pd.restless = false
+
+        elseif zoneRisk == 100 then
+            -- always on area
+            pd.risk = 100
+            pd.spawnSprinters = true
+            pd.restless = true
+        else
+
+            pd.risk = (zoneRisk + timerRisk + sprinterKillRisk) * self.settings.moon[env.moon.phase + 1]
+            pd.spawnSprinters = env.value > 30
+
+        end
+
+    end
+
+    if pd.spawnSprinters ~= playerData.spawnSprinters then
+        if pd.spawnSprinters then
+            print("Player ", name, " is now spawning sprinters")
+        else
+            print("Player ", name, " is no longer spawning sprinters")
+        end
+    end
+
+    self.players[name] = pd
 
 end
 
-function PhunRunners:canSpawnSprinters(playerObj)
-
-    local currentData = playerObj:getModData().PhunRunners
-
-    if not currentData or not currentData.location then
-        return 0
+function PhunRunners:updatePlayers()
+    for i = 1, getOnlinePlayers():size() do
+        local p = getOnlinePlayers():get(i - 1)
+        if p:isLocalPlayer() then
+            self:updatePlayer(p)
+        end
     end
-
-    return currentData.spawnSprinters == true
-
 end
-
-Events.OnZombieUpdate.Add(PhunRunners.updateZed);
-
-Events.OnInitGlobalModData.Add(function()
-    PhunRunners:ini()
-end)
-
