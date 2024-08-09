@@ -10,7 +10,7 @@ if isClient() then
 
         for i = 0, getOnlinePlayers():size() - 1 do
             local player = getOnlinePlayers():get(i)
-            if player:isLocalPlayer() then
+            if player:isLocalPlayer() and isAdmin() then
                 local window = PhunRunnersWidget.OnOpenPanel(player)
                 if not window:isVisible() then
                     window:setVisible(true)
