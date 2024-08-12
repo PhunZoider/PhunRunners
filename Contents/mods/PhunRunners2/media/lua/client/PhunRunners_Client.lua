@@ -18,14 +18,33 @@ function PhunRunners:sprintSpeed(zed)
     sandboxOptions:set("ZombieLore.Speed", NORMAL)
 end
 
+-- Player is eligible for sprinters to start, but indiviual settings may prevent it
+function PhunRunners:startSprintersSound(playerObj)
+    local vol = (SandboxVars.PhunRunners.PhunRunnersVolume or 15) * .01
+    getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(vol);
+end
+
+function PhunRunners:stopSprintersSound(playerObj)
+    local vol = (SandboxVars.PhunRunners.PhunRunnersVolume or 15) * .01
+    getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(vol);
+end
+
 function PhunRunners:makeSprint(zed)
     self:sprintSpeed(zed)
-    local soundName = "PhunRunners_" .. ZombRand(1, 6)
+    local soundName = "PhunRunners_" .. ZombRand(1, 5)
     zed:getModData().PhunRunners = {
         sprinting = true
     }
-
     triggerEvent(self.events.OnSprinterSpottedPlayer, zed)
+    if zed:getEmitter():isPlaying(soundName) then
+        return
+    end
+
+    local vol = (SandboxVars.PhunRunners and SandboxVars.PhunRunners.PhunRunnersSprinterVolume or 25) * .01
+    local soundEmitter = getWorld():getFreeEmitter()
+    local hnd = soundEmitter:playSound(soundName, zed:getX(), zed:getY(), zed:getZ())
+    soundEmitter:setVolume(hnd, vol)
+
 end
 
 function PhunRunners:normalSpeed(zed)
@@ -40,7 +59,21 @@ function PhunRunners:makeNormal(zed)
     zed:getModData().PhunRunners = nil
 end
 local ids = {}
+local banditsIntegration = nil
+
 function PhunRunners:updateZed(zed)
+
+    if banditsIntegration == nil then
+        banditsIntegration = getActivatedMods():contains("Bandits")
+    end
+
+    if banditsIntegration == true then
+        local data = zed:getModData()
+        if data and data.brain then
+            -- this is a bandit
+            return
+        end
+    end
 
     local id = tostring(zed:getOnlineID())
 
@@ -72,7 +105,16 @@ function PhunRunners:updateZed(zed)
 
     local playerData = self:getPlayerData(player)
 
-    if playerData.spawnSprinters then
+    if playerData.spawnSprinters and playerData.modifier > 0 and playerData.risk > 0 then
+
+        -- if zData.modifier ~= playerData.modifier and zData.sprinting ~= true then
+        --     if (zData.modifier or 0) > 0 and (zData.modifier or 0) < 100 and playerData.modifier > 0 then
+        --         self:makeNormal(zed)
+        --         zData.sprinting = nil
+        --     end
+        -- end
+        zData.modifier = playerData.modifier
+
         if zData.sprinting == true then
 
             if self.settings.slowInLight > 0 then
@@ -100,9 +142,11 @@ function PhunRunners:updateZed(zed)
             zData.sprinting = false
             -- zData.location = PhunZones:getLocation(zed)
             if playerData.risk > 0 then
-                if ZombRand(100) <= playerData.risk then
+                local risk = playerData.risk * ((playerData.modifier or 0) * 0.01)
+                print("risk is ", tostring(risk), " vs ", tostring(playerData.risk), " with modifier of ",
+                    tostring(playerData.modifier))
+                if risk > 0 and ZombRand(100) <= playerData.risk then
                     self:makeSprint(zed)
-                    zData.sprinting = true
                 end
             end
         end
@@ -111,8 +155,61 @@ function PhunRunners:updateZed(zed)
             self:makeNormal(zed)
             zData.sprinting = false
         end
-        zData.PhunRunners = {
+        zData = {
             ticks = 1
         }
     end
+end
+
+local diffText = {"minimal risk", "low risk", "moderate risk", "high risk", "extreme risk"}
+
+function PhunRunners:getSummary(playerObj)
+
+    local risk = PhunRunners:getPlayerData(playerObj)
+    local riskDesc = {}
+
+    local grace = math.floor(risk.grace or 0)
+
+    if grace > 1 then
+        table.insert(riskDesc, getText("IGUI_PhunRunners_IgnoringYouForAnotherXHours", grace) .. "\n")
+    elseif grace > 0 then
+        table.insert(riskDesc, getText("IGUI_PhunRunners_IgnoringYouForAnotherXHour") .. "\n")
+    end
+
+    table.insert(riskDesc, getText("IGUI_PhunRunners_RiskLevel", risk.risk))
+    table.insert(riskDesc, "Area is " .. diffText[(risk.difficulty or 0) + 1])
+    if risk.modifier and risk.modifier > 0 and risk.modifier < 100 then
+        table.insert(riskDesc, "Darkness modifier: " .. tostring(risk.modifier))
+    end
+    if (risk.moonMultiplier or 0) > 1 then
+        table.insert(riskDesc, getText("IGUI_PhunRunners_RiskFromMoon", risk.moonMultiplier))
+    end
+
+    table.insert(riskDesc, "\n")
+
+    if risk.modifier and risk.modifier > 0 then
+
+        if risk.modifier >= 100 then
+            table.insert(riskDesc, "Zombies are rabid")
+        else
+            table.insert(riskDesc, getText("IGUI_PhunRunners_ZedsAreRestless"))
+        end
+        -- if risk.risk == 0 then
+        --     table.insert(riskDesc, "But sprinters seem to be ignoring you")
+        -- end
+    else
+        table.insert(riskDesc, getText("IGUI_PhunRunners_ZedsAreSettling"))
+    end
+
+    local results = {
+        risk = risk.risk,
+        spawnSprinters = risk.spawnSprinters == true,
+        restless = risk.restless == true,
+        title = risk.zone and risk.zone.title or "Wilderness",
+        subtitle = risk.zone and risk.zone.subtitle or nil,
+        description = table.concat(riskDesc, "\n")
+
+    }
+
+    return results
 end

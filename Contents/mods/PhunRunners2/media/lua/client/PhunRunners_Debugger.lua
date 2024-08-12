@@ -105,7 +105,12 @@ function PhunRunnersWidget:prerender()
     ISCollapsableWindowJoypad.prerender(self);
     lineY = 25
     local risk = PhunRunners:getPlayerData(self.player)
-    local env = PhunRunners.env or {}
+    local env = PhunRunners.env or {
+        light = {},
+        fog = {},
+        moon = {},
+        info = {}
+    }
     -- local zone = PhunZones.players[self.player:getUsername()] or {}
 
     -- local riskLevel = math.floor(((risk.value / risk.total) * 100) + 0.5)
@@ -117,31 +122,31 @@ function PhunRunnersWidget:prerender()
 
     -- y = y + FONT_HGT_SMALL + 1
     self:printLine("PhunRunner");
-    self:printLine(string.format("Risk: %.2f", risk.risk or 0))
-    self:printLine(string.format("Spawn Sprinters: %s", risk.spawnSprinters == true and "True" or "False"));
-    self:printLine(string.format("Restless: %s", risk.restless == true and "True" or "False"));
-    self:printLine(string.format("Risk: %.2f", risk.risk or 0));
+    self:printLine(string.format("    Risk: %.2f", risk.risk or 0))
+    self:printLine(string.format("    val: %.2f", env.value or 0))
+    self:printLine(string.format("    Spawn Sprinters: %s", risk.spawnSprinters == true and "True" or "False"));
+    self:printLine(string.format("    Restless: %s", risk.restless == true and "True" or "False"));
 
-    self:printLine(string.format("Season: %s", env.season or "Unknown Season"));
-    self:printLine(string.format("value: %i%%", env.value or 0));
+    self:printLine(string.format("    Season: %s", env.season or "Unknown Season"));
+    self:printLine(string.format("    Darkness Modifier: %i%%", env.value or 0));
     self:printLine("Light")
-    self:printLine(string.format("adjustedLightIntensity: %.2f", env.light.adjustedLightIntensity or 0));
-    self:printLine(string.format("intensity: %.2f", env.light.intensity or 0));
+    self:printLine(string.format("    adjustedLightIntensity: %.2f", env.light.adjustedLightIntensity or 0));
+    self:printLine(string.format("    intensity: %.2f", env.light.intensity or 0));
 
     self:printLine("Fog")
-    self:printLine(string.format("intensity: %.2f", env.fog.intensity or 0));
+    self:printLine(string.format("    intensity: %.2f", env.fog.intensity or 0));
 
     self:printLine("Moon")
-    self:printLine(string.format("phase: %s", env.moon.phase or 0));
-    self:printLine(string.format("category: %s", env.moon.category or 0));
+    self:printLine(string.format("    phase: %s", env.moon.phase or 0));
+    self:printLine(string.format("    category: %s", env.moon.category or 0));
 
     self:printLine("Info")
-    self:printLine(string.format("night: %i", env.info.night or 0));
-    self:printLine(string.format("time: %i:%i", env.info.hour or 0, env.info.minute or 0));
-    self:printLine(string.format("dusk: %i", env.info.dusk or 0));
-    self:printLine(string.format("dawn: %i", env.info.dawn or 0));
-    self:printLine(string.format("timeToDusk: %i", env.info.timeToDusk or 0));
-    self:printLine(string.format("timeToDawn: %i", env.info.timeToDawn or 0));
+    self:printLine(string.format("    night: %i", env.info.night or 0));
+    self:printLine(string.format("    time: %i:%i", env.info.hour or 0, env.info.minute or 0));
+    self:printLine(string.format("    dusk: %i", env.info.dusk or 0));
+    self:printLine(string.format("    dawn: %i", env.info.dawn or 0));
+    self:printLine(string.format("    timeToDusk: %i", env.info.timeToDusk or 0));
+    self:printLine(string.format("    timeToDawn: %i", env.info.timeToDawn or 0));
 
     y = y + FONT_HGT_SMALL + 1
 

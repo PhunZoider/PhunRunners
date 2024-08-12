@@ -199,80 +199,145 @@ function PhunRunners:updatePlayer(playerObj)
     local totalSprinters = pstats.total.sprinters or 0
     local totalDeaths = pstats.total.deaths or 0
     local charHours = pstats.current.hours or 0
+    local graceHours = charHours < self.settings.graceHours and self.settings.graceHours - charHours or 0
+    local graceTotalHours = hours < self.settings.graceTotalHours and self.settings.graceTotalHours - hours or 0
+    local sprinterKillRisk = 0
+    local timerRisk = 0
+    local zoneRisk = 0
+
+    if hours > 1000 then
+        timerRisk = 18
+    elseif hours > 500 then
+        timerRisk = 12
+    elseif hours > 250 then
+        timerRisk = 8
+    elseif hours > 100 then
+        timerRisk = 4
+    elseif hours > 50 then
+        timerRisk = 2
+    end
+
+    if totalSprinters > 100 then
+        sprinterKillRisk = 12
+    elseif totalSprinters > 50 then
+        sprinterKillRisk = 8
+    elseif totalSprinters > 25 then
+        sprinterKillRisk = 6
+    elseif totalSprinters > 10 then
+        sprinterKillRisk = 4
+    elseif totalSprinters > 5 then
+        sprinterKillRisk = 2
+    end
+
+    if zoneDifficulty > 4 then
+        zoneRisk = 100
+    elseif zoneDifficulty > 3 then
+        zoneRisk = 15
+    elseif zoneDifficulty > 2 then
+        zoneRisk = 10
+    elseif zoneDifficulty > 1 then
+        zoneRisk = 5
+    end
+
+    local totalRisk = (zoneRisk + timerRisk + sprinterKillRisk) * self.settings.moon[env.moon.phase + 1]
+    totalRisk = totalRisk > 100 and 100 or totalRisk
+
+    local modifier = 0
+    if env.value < 30 then
+        modifier = 0
+    elseif env.value > 50 then
+        modifier = 100
+    else
+        modifier = ((env.value - 30) / (50 - 30)) * 100
+    end
+
+    local grace = math.max(graceHours or 0, graceTotalHours or 0)
 
     local pd = {
-        risk = 0,
-        spawnSprinters = false,
-        restless = env.value > 30
+        zone = zone,
+        risk = totalRisk,
+        modifier = modifier,
+        env = env.value,
+        spawnSprinters = modifier > 0 and grace == 0 and totalRisk > 0,
+        restless = env.value > 30,
+        difficulty = zoneDifficulty,
+        zoneRisk = zoneRisk,
+        timerRisk = timerRisk,
+        sprinterKillRisk = sprinterKillRisk,
+        moonMultiplier = self.settings.moon[env.moon.phase + 1],
+        grace = grace
     }
 
     if zoneDifficulty == 0 or charHours < self.settings.graceHours or hours < self.settings.graceTotalHours then
         pd.risk = 0
+        pd.restless = false
         pd.spawnSprinters = false
-    else
+        -- else
 
-        local zoneRisk = 0
-        if zoneDifficulty > 4 then
-            zoneRisk = 100
-        elseif zoneDifficulty > 3 then
-            zoneRisk = 15
-        elseif zoneDifficulty > 2 then
-            zoneRisk = 10
-        elseif zoneDifficulty > 1 then
-            zoneRisk = 5
-        end
+        --     local zoneRisk = 0
+        --     if zoneDifficulty > 4 then
+        --         zoneRisk = 100
+        --     elseif zoneDifficulty > 3 then
+        --         zoneRisk = 15
+        --     elseif zoneDifficulty > 2 then
+        --         zoneRisk = 10
+        --     elseif zoneDifficulty > 1 then
+        --         zoneRisk = 5
+        --     end
 
-        local timerRisk = 0
-        if hours > 1000 then
-            timerRisk = 18
-        elseif hours > 500 then
-            timerRisk = 12
-        elseif hours > 250 then
-            timerRisk = 8
-        elseif hours > 100 then
-            timerRisk = 4
-        elseif hours > 50 then
-            timerRisk = 2
-        end
+        --     local timerRisk = 0
+        --     if hours > 1000 then
+        --         timerRisk = 18
+        --     elseif hours > 500 then
+        --         timerRisk = 12
+        --     elseif hours > 250 then
+        --         timerRisk = 8
+        --     elseif hours > 100 then
+        --         timerRisk = 4
+        --     elseif hours > 50 then
+        --         timerRisk = 2
+        --     end
 
-        local sprinterKillRisk = 0
-        if totalSprinters > 100 then
-            timerRisk = 12
-        elseif totalSprinters > 50 then
-            timerRisk = 8
-        elseif totalSprinters > 25 then
-            timerRisk = 6
-        elseif totalSprinters > 10 then
-            timerRisk = 4
-        elseif totalSprinters > 5 then
-            timerRisk = 2
-        end
+        --     local sprinterKillRisk = 0
+        --     if totalSprinters > 100 then
+        --         timerRisk = 12
+        --     elseif totalSprinters > 50 then
+        --         timerRisk = 8
+        --     elseif totalSprinters > 25 then
+        --         timerRisk = 6
+        --     elseif totalSprinters > 10 then
+        --         timerRisk = 4
+        --     elseif totalSprinters > 5 then
+        --         timerRisk = 2
+        --     end
 
-        if zoneRisk == 0 or timerRisk == 0 then
-            -- no risk
-            pd.risk = 0
-            pd.spawnSprinters = false
-            pd.restless = false
+        --     if zoneRisk == 0 or timerRisk == 0 then
+        --         -- no risk
+        --         pd.risk = 0
+        --         pd.spawnSprinters = false
+        --         pd.restless = false
 
-        elseif zoneRisk == 100 then
-            -- always on area
-            pd.risk = 100
-            pd.spawnSprinters = true
-            pd.restless = true
-        else
+        --     elseif zoneRisk == 100 then
+        --         -- always on area
+        --         pd.risk = 100
+        --         pd.spawnSprinters = true
+        --         pd.restless = true
+        --     else
 
-            pd.risk = (zoneRisk + timerRisk + sprinterKillRisk) * self.settings.moon[env.moon.phase + 1]
-            pd.spawnSprinters = env.value > 30
+        --         pd.risk = (zoneRisk + timerRisk + sprinterKillRisk) * self.settings.moon[env.moon.phase + 1]
+        --         pd.spawnSprinters = env.value > 30
 
-        end
+        --     end
 
     end
 
     if pd.spawnSprinters ~= playerData.spawnSprinters then
         if pd.spawnSprinters then
             print("Player ", name, " is now spawning sprinters")
+            self:startSprintersSound(playerObj)
         else
             print("Player ", name, " is no longer spawning sprinters")
+            self:stopSprintersSound(playerObj)
         end
     end
 
