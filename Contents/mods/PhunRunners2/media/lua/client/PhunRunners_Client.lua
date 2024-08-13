@@ -39,7 +39,7 @@ function PhunRunners:makeSprint(zed)
     if zed:getEmitter():isPlaying(soundName) then
         return
     end
-
+    print("zed " .. tostring(zed:getOnlineID()) .. " is sprinting")
     local vol = (SandboxVars.PhunRunners and SandboxVars.PhunRunners.PhunRunnersSprinterVolume or 25) * .01
     local soundEmitter = getWorld():getFreeEmitter()
     local hnd = soundEmitter:playSound(soundName, zed:getX(), zed:getY(), zed:getZ())
@@ -56,10 +56,19 @@ end
 function PhunRunners:makeNormal(zed)
     print("makeNormal")
     self:normalSpeed(zed)
-    zed:getModData().PhunRunners = nil
+    zed:getModData().PhunRunners = {
+        sprinting = false
+    }
+    print("zed " .. tostring(zed:getOnlineID()) .. " is now normal")
 end
 local ids = {}
 local banditsIntegration = nil
+
+local function getDistance(from, to)
+    local x = math.abs(from.x - to.x)
+    local y = math.abs(from.y - to.y)
+    return math.sqrt(x ^ 2 + y ^ 2)
+end
 
 function PhunRunners:updateZed(zed)
 
@@ -121,7 +130,26 @@ function PhunRunners:updateZed(zed)
                 local zsquare = zed:getCurrentSquare()
                 local light = zsquare:getLightLevel(player:getPlayerNum())
 
-                if not zData.lightSupressed and light > self.settings.slowInLight then
+                -- local activeLight = player:getActiveLightItem()
+                -- local distance = activeLight and player:getLightDistance() or 0
+                -- if activeLight then
+                --     print("Active light! ", tostring(distance))
+                -- else
+                --     print("No active light", tostring(distance))
+                -- end
+
+                if (getDistance({
+                    x = player:getX(),
+                    y = player:getY()
+                }, {
+                    x = zed:getX(),
+                    y = zed:getY()
+                }) < 4) then
+                    if zData.lightSupressed == true then
+                        self:sprintSpeed(zed)
+                        zData.lightSupressed = false
+                    end
+                elseif not zData.lightSupressed and light > self.settings.slowInLight then
                     -- its too bright, make them walk
                     print(string.format("its too bright: %.2f/%.2f, make them walk ", light, self.settings.slowInLight))
                     self:normalSpeed(zed)

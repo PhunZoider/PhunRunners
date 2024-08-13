@@ -49,14 +49,19 @@ else
 end
 
 Events.OnZombieDead.Add(function(zed)
-    local data = zed:getModData().PhunRunners
+    local data = zed:getModData()
     if data then
-        if data.sprinting then
-            triggerEvent(PhunRunners.events.OnPhunRunnersZedDied, zed)
+        PhunTools:debug("zed", data)
+        local sprinter = false
+        if data.PhunRunners then
+            if data.PhunRunners.sprinting then
+                sprinter = true
+                triggerEvent(PhunRunners.events.OnPhunRunnersZedDied, zed)
+            end
         end
+        print(((sprinter == true and "Sprinter") or "Zed") .. " died ", tostring(zed:getOnlineID()), " ", zed:getUID())
     end
-    print("Zed died ", tostring(zed:getOnlineID()), zed:getUID())
-    PhunRunners.zeds[tostring(zed:getOnlineID())] = nil
+    -- PhunRunners.zeds[tostring(zed:getOnlineID())] = nil
 end);
 
 Events.OnInitGlobalModData.Add(function()
