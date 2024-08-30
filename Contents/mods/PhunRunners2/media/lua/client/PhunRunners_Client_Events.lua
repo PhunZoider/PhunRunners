@@ -18,6 +18,10 @@ if PhunZones then
             end
         end
     end)
+
+    Events[PhunZones.events.OnPhunZonesPlayerLocationChanged].Add(function(playerObj, zone)
+        PhunRunners:updatePlayer(playerObj, zone)
+    end)
 end
 
 if PhunStats then

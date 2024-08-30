@@ -21,9 +21,3 @@ if PhunTools then
         PhunRunners:clean()
     end)
 end
-
-if PhunZones and PhunZones.events.OnPhunZonesPlayerLocationChanged then
-    Events[PhunZones.events.OnPhunZonesPlayerLocationChanged].Add(function(playerObj, zone)
-        PhunRunners:updatePlayer(playerObj, zone)
-    end)
-end
