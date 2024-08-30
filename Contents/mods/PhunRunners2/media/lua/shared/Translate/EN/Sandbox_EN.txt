@@ -1,17 +1,29 @@
 Sandbox_EN = {
     Sandbox_PhunRunners = "PhunRunners"
-    Sandbox_PhunRunnersVolume = "Percentage Volume"
-    Sandbox_PhunRunnersVolume_tooltip = "Volume of night/morning sound indicator"
 
-    Sandbox_PhunRunnersShowMoodle = "Percentage Sprinters Volume"
-    Sandbox_PhunRunnersShowMoodle_tooltip = "Volume of sprinter sound indicator"
+    Sandbox_PhunRunnersVolume = "Percentage Volume"
+    Sandbox_PhunRunnersVolume_tooltip = "Volume of sound played to notify players that sprinters are now on the run!"
 
     Sandbox_PhunRunnersSprinterVolume = "Percentage Sprinters Volume"
-    Sandbox_PhunRunnersSprinterVolume_tooltip = "Volume of sprinter sound indicator"
+    Sandbox_PhunRunnersSprinterVolume_tooltip = "Volume of sprinter screech"
 
-    Sandbox_PhunRunnersStartTimeBase = "Base Start Time"
-    Sandbox_PhunRunnersStartTimeBase_tooltip = "Base time runners start"
+    Sandbox_PhunRunnersTickRate = "Tick Rate"
+    Sandbox_PhunRunnersTickRate_tooltip = "Number of game ticks to defer between processing zed updates. A higher number can increase performance"
 
-    Sandbox_PhunRunnersEndTimeBase = "Base End Time"
-    Sandbox_PhunRunnersEndTimeBase_tooltip = "Base time runners end"
+    Sandbox_PhunRunnersSlowInLightLevel = "Slow at brightness percent"
+    Sandbox_PhunRunnersSlowInLightLevel_tooltip = "The percentage of lightness that sprinters will stop running in. If lightness is higher than this number, sprinters will start walking until it gets darker"
+
+    Sandbox_PhunRunnersTotalHoursModifier = "Total hours modifier"
+    Sandbox_PhunRunnersTotalHoursModifier_tooltip = "Semi-Colon delimited key value string in the fomrat of x=y;. x is the number of hours for an additional y percentage increase in risk. eg 10=1 will cause an additional 1 percent chance of sprinters forming after the player has been on the server for more than 10 hours. Note: First true value takes precedence"
+
+    Sandbox_TotalSprintersModifier = "Total sprinters killed modifier"
+    Sandbox_TotalSprintersModifier_tooltip = "Semi-Colon delimited key value string in the fomrat of x=y;. x is the number of sprinters killed for an additional y percentage increase in risk. eg 10=1 will cause an additional 1 percent chance of sprinters forming after the player has killed 10 or more sprinters. Note: First true value takes precedence"
+
+    Sandbox_TotalDifficultyModifier = "Difficulty modifier"
+    Sandbox_TotalDifficultyModifier_tooltip = "Semi-Colon delimited string that maps to the difficultly level of the zone. eg 1;5;10;15 will translate to: 1 percent additional chance of sprinters in a zone with a difficulty of 1. A zone difficults of 3 would lead to a 10 percent increase. Note that this is best partnered with PhunZones mod"
+
+    Sandbox_PhunRunnersMoonModifier = "Moon phase modifier"
+    Sandbox_PhunRunnersMoonModifier_tooltip = "Semi-Colon delimited value of percentages that corresponds with the 9 phases of the moon (New Moon, Crecent Moon, First Quarter, Gibbous Moon, Full Moon, Gibbous Moon, Last Quarter and Waning Crescent). a value of 50;80;90;100;200;100;90;80 would mean that the New Moon would reduce the risk level by 50% while a Full Moon would double the risk"
+
+
 }

@@ -310,7 +310,72 @@ function PhunRunners:getId(zedObj)
     end
 end
 
+local modifiers = {
+    inied = false,
+    hours = nil,
+    sprinters = nil,
+    difficulty = nil,
+    moon = nil
+}
+
+function PhunRunners:debug(...)
+    if PhunTools then
+        PhunTools:debug(...)
+    else
+        print(...)
+    end
+end
+
+function PhunRunners:printTable(t)
+    if PhunTools then
+        PhunTools:printTable(t)
+    else
+        print("PhunRunners:printTable: ", t)
+    end
+end
+
 function PhunRunners:updatePlayer(playerObj)
+
+    if not modifiers.inied then
+        modifiers.inied = true
+        modifiers.hours = nil
+        local modifierMap = {
+            ["hours"] = {
+                setting = "TotalHoursModifier"
+            },
+            ["sprinters"] = {
+                setting = "TotalSprintersModifier"
+            },
+            ["difficulty"] = {
+                setting = "TotalDifficultyModifier",
+                array = true
+            },
+            ["moon"] = {
+                setting = "TotalMoonModifier",
+                array = true
+            }
+        }
+        local sb = sandbox
+        for k, v in pairs(modifierMap) do
+            local raw = sb[v.setting] or ""
+            raw = luautils.split(raw, ";")
+            if raw and #raw > 0 then
+                if v.array then
+                    modifiers[k] = raw
+                else
+                    modifiers[k] = {}
+                    for i = 1, #raw do
+                        local raw = luautils.split(raw[i], "=")
+                        if raw and #raw == 2 then
+                            modifiers[k][tonumber(raw[1])] = tonumber(raw[2])
+                        end
+                    end
+                end
+            end
+        end
+
+        self:printTable(modifiers)
+    end
 
     if not playerObj or not playerObj:isLocalPlayer() then
         return
@@ -331,7 +396,7 @@ function PhunRunners:updatePlayer(playerObj)
         }
     }
 
-    local zoneDifficulty = zone.difficulty
+    local zoneDifficulty = zone.difficulty or 1
     local hours = pstats.total.hours or 0
     local totalKills = pstats.total.kills or 0
     local totalSprinters = pstats.total.sprinters or 0
@@ -341,56 +406,40 @@ function PhunRunners:updatePlayer(playerObj)
     local graceTotalHours = hours < self.settings.graceTotalHours and self.settings.graceTotalHours - hours or 0
     local sprinterKillRisk = 0
     local timerRisk = 0
-    local zoneRisk = sandbox.TotalZone1
+    local zoneRisk = 0
+    local moonPhaseModifierValue = 100
+    local lightModifier = 0
 
-    if hours > 1000 then
-        timerRisk = sandbox.TotalHours5
-    elseif hours > 500 then
-        timerRisk = sandbox.TotalHours4
-    elseif hours > 250 then
-        timerRisk = sandbox.TotalHours3
-    elseif hours > 100 then
-        timerRisk = sandbox.TotalHours2
-    elseif hours > 50 then
-        timerRisk = sandbox.TotalHours1
+    if modifiers and modifiers.hours then
+        for k, v in pairs(modifiers.hours) do
+            if hours > k then
+                timerRisk = v
+                break
+            end
+        end
     end
 
-    if totalSprinters > 100 then
-        sprinterKillRisk = sandbox.TotalSprinters5
-    elseif totalSprinters > 50 then
-        sprinterKillRisk = sandbox.TotalSprinters4
-    elseif totalSprinters > 25 then
-        sprinterKillRisk = sandbox.TotalSprinters3
-    elseif totalSprinters > 10 then
-        sprinterKillRisk = sandbox.TotalSprinters2
-    elseif totalSprinters > 5 then
-        sprinterKillRisk = sandbox.TotalSprinters1
+    if modifiers and modifiers.sprinters then
+        for k, v in pairs(modifiers.sprinters) do
+            if hours > k then
+                sprinterKillRisk = v
+                break
+            end
+        end
     end
 
-    if zoneDifficulty > 4 then
-        zoneRisk = sandbox.TotalZone5
-    elseif zoneDifficulty > 3 then
-        zoneRisk = sandbox.TotalZone4
-    elseif zoneDifficulty > 2 then
-        zoneRisk = sandbox.TotalZone3
-    elseif zoneDifficulty > 1 then
-        zoneRisk = sandbox.TotalZone2
-    end
+    zoneDifficulty = modifiers and zoneDifficulty and zoneDifficulty > 0 and modifiers.difficulty and
+                         modifiers.difficulty[zoneDifficulty] or 0
+    moonPhaseModifierValue = (modifiers and env and env.mooon and env.moon.phase and modifiers.moon[env.moon.phase] or
+                                 100) * .01
+    local totalRisk = math.min(100, (zoneRisk + timerRisk + sprinterKillRisk) * moonPhaseModifierValue)
 
-    local moonPhaseModifierValue = sandbox['TotalMoon' .. tostring(env.moon.phase or 0)]
-
-    moonPhaseModifierValue = moonPhaseModifierValue * .01
-
-    local totalRisk = (zoneRisk + timerRisk + sprinterKillRisk) * moonPhaseModifierValue
-    totalRisk = totalRisk > 100 and 100 or totalRisk
-
-    local modifier = 0
     if env.value < 30 then
-        modifier = 0
+        lightModifier = 0
     elseif env.value > 50 then
-        modifier = 100
+        lightModifier = 100
     else
-        modifier = ((env.value - 30) / (50 - 30)) * 100
+        lightModifier = ((env.value - 30) / (50 - 30)) * 100
     end
 
     local grace = math.max(graceHours or 0, graceTotalHours or 0)
@@ -398,9 +447,9 @@ function PhunRunners:updatePlayer(playerObj)
     local pd = {
         zone = zone,
         risk = totalRisk,
-        modifier = modifier,
+        modifier = lightModifier,
         env = env.value,
-        spawnSprinters = modifier > 0 and grace == 0 and totalRisk > 0,
+        spawnSprinters = lightModifier > 0 and grace == 0 and totalRisk > 0,
         restless = env.value > 30,
         difficulty = zoneDifficulty,
         zoneRisk = zoneRisk,

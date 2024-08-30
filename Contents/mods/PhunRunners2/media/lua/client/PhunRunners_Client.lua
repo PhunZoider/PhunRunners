@@ -7,9 +7,10 @@ local PhunStats = PhunStats
 local sandbox = SandboxVars.PhunRunners
 local sandboxOptions = getSandboxOptions()
 local world = getWorld()
-
+local tickRate = sandbox.TickRate or 20
 local SPRINT = 1
 local NORMAL = 2
+local diffText = {"min", "low", "moderate", "high", "extreme"}
 
 -- Player is eligible for sprinters to start, but indiviual settings may prevent it
 function PhunRunners:startSprintersSound(playerObj)
@@ -36,8 +37,6 @@ function PhunRunners:sprintSpeed(zed)
     zed:makeInactive(false);
     sandboxOptions:set("ZombieLore.Speed", NORMAL)
 end
-
-local tickRate = 20
 
 function PhunRunners:recalcOutfits()
     local total = 0
@@ -95,8 +94,6 @@ function PhunRunners:updateZed(zed)
     end
 
 end
-
-local diffText = {"min", "low", "moderate", "high", "extreme"}
 
 function PhunRunners:getSummary(playerObj)
 

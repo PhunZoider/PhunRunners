@@ -137,7 +137,6 @@ function PhunRunners:shouldSprint(zed, zData, playerData)
         end
 
         local rnd = ZombRand(100)
-        -- player:Say(id .. " Risk is " .. tostring(risk) .. " rnd is " .. tostring(rnd))
         if risk > 0 and rnd <= risk then
             print("Sprinter local registered " .. zData.id .. " risk " .. tostring(risk) .. " rnd " .. tostring(rnd))
             self:registerSprinter(zData.id)
