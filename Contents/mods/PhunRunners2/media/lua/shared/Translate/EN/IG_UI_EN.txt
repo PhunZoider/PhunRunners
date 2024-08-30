@@ -3,8 +3,16 @@ IGUI_EN = {
     IGUI_PhunRunners_IgnoringYouForAnotherXHours = "Rabid zombies are ignoring you for %1 hours",
     IGUI_PhunRunners_IgnoringYouForAnotherXHour = "Rabid zombies are ignoring you for an hour",
     IGUI_PhunRunners_RiskFromArea = "x %1 from area",
-    IGUI_PhunRunners_RiskFromMoon = "+ %1% from moon phase"
+    IGUI_PhunRunners_RiskFromMoon = "%1% from %2"
     IGUI_PhunRunners_RiskFromTime = "+ %1 from survival time"
     IGUI_PhunRunners_ZedsAreRestless = "Zombies are restless"
     IGUI_PhunRunners_ZedsAreSettling = "Zombies are settled"
+    IGUI_PhunRunners_ZedsAreRabid = "Zombies are rabid"
+    IGUI_PhunRunners_AreaRisk.min = "Area is minimal risk"
+    IGUI_PhunRunners_AreaRisk.low = "Area is low risk"
+    IGUI_PhunRunners_AreaRisk.moderate = "Area is moderate risk"
+    IGUI_PhunRunners_AreaRisk.high = "Area is high risk"
+    IGUI_PhunRunners_AreaRisk.extreme = "Area is extreme risk"
+    IGUI_PhunRunners_Modifier.darkness = "Darkness: -%1%"
+    IGUI_PhunRunners_Modifiers = "Modifiers"
 }

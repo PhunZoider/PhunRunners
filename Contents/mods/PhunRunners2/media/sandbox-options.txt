@@ -47,3 +47,246 @@ option PhunRunners.PhunRunnersSprinterVolume
     page=PhunRunners,
     translation = PhunRunnersSprinterVolume
 }
+
+option PhunRunners.SlowInLightLevel
+{ 
+    type = integer, 
+    default = 74, 
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersSlowInLightLevel
+}
+
+option PhunRunners.TotalHours5
+{ 
+    type = integer, 
+    default = 18,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalHours5
+}
+
+option PhunRunners.TotalHours4
+{ 
+    type = integer, 
+    default = 12,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalHours4
+}
+
+option PhunRunners.TotalHours3
+{ 
+    type = integer, 
+    default = 8,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalHours3
+}
+
+option PhunRunners.TotalHours2
+{ 
+    type = integer, 
+    default = 4,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalHours2
+}
+
+option PhunRunners.TotalHours1
+{ 
+    type = integer, 
+    default = 2,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalHours1
+}
+
+
+option PhunRunners.TotalSprinters5
+{ 
+    type = integer, 
+    default = 25,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalSprinters5
+}
+
+option PhunRunners.TotalHours4
+{ 
+    type = integer, 
+    default = 20,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalSprinters4
+}
+
+option PhunRunners.TotalSprinters3
+{ 
+    type = integer, 
+    default = 15,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalSprinters3
+}
+
+option PhunRunners.TotalSprinters2
+{ 
+    type = integer, 
+    default = 10,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalSprinters2
+}
+
+option PhunRunners.TotalSprinters1
+{ 
+    type = integer, 
+    default = 5,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalSprinters1
+}
+
+option PhunRunners.TotalZone5
+{ 
+    type = integer, 
+    default = 100,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalZone5
+}
+
+option PhunRunners.TotalZone4
+{ 
+    type = integer, 
+    default = 15,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalZone4
+}
+
+option PhunRunners.TotalZone3
+{ 
+    type = integer, 
+    default = 10,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalZone3
+}
+
+option PhunRunners.TotalZone2
+{ 
+    type = integer, 
+    default = 5,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalZone2
+}
+
+option PhunRunners.TotalZone1
+{ 
+    type = integer, 
+    default = 0,
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersTotalZone1
+}
+
+
+option PhunRunners.TotalMoon0
+{ 
+    type = integer, 
+    default = 50,
+    min = 0,
+    max = 1000,
+    page=PhunRunners,
+    translation = PhunRunnersTotalZone1
+}
+
+option PhunRunners.TotalMoon1
+{ 
+    type = integer, 
+    default = 80,
+    min = 0,
+    max = 1000,
+    page=PhunRunners,
+    translation = PhunRunnersTotalZone1
+}
+
+option PhunRunners.TotalMoon2
+{ 
+    type = integer, 
+    default = 90,
+    min = 0,
+    max = 1000,
+    page=PhunRunners,
+    translation = PhunRunnersTotalZone1
+}
+
+option PhunRunners.TotalMoon3
+{ 
+    type = integer, 
+    default = 110,
+    min = 0,
+    max = 1000,
+    page=PhunRunners,
+    translation = PhunRunnersTotalZone1
+}
+
+option PhunRunners.TotalMoon4
+{ 
+    type = integer, 
+    default = 200,
+    min = 0,
+    max = 1000,
+    page=PhunRunners,
+    translation = PhunRunnersTotalZone1
+}
+
+option PhunRunners.TotalMoon5
+{ 
+    type = integer, 
+    default = 110,
+    min = 0,
+    max = 1000,
+    page=PhunRunners,
+    translation = PhunRunnersTotalZone1
+}
+
+option PhunRunners.TotalMoon6
+{ 
+    type = integer, 
+    default = 90,
+    min = 0,
+    max = 1000,
+    page=PhunRunners,
+    translation = PhunRunnersTotalZone1
+}
+
+option PhunRunners.TotalMoon7
+{ 
+    type = integer, 
+    default = 80,
+    min = 0,
+    max = 1000,
+    page=PhunRunners,
+    translation = PhunRunnersTotalZone1
+}
+

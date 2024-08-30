@@ -11,13 +11,6 @@ local world = getWorld()
 local SPRINT = 1
 local NORMAL = 2
 
-function PhunRunners:sprintSpeed(zed)
-    zed:makeInactive(true);
-    sandboxOptions:set("ZombieLore.Speed", SPRINT)
-    zed:makeInactive(false);
-    sandboxOptions:set("ZombieLore.Speed", NORMAL)
-end
-
 -- Player is eligible for sprinters to start, but indiviual settings may prevent it
 function PhunRunners:startSprintersSound(playerObj)
     local vol = (SandboxVars.PhunRunners.PhunRunnersVolume or 15) * .01
@@ -29,167 +22,81 @@ function PhunRunners:stopSprintersSound(playerObj)
     getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(vol);
 end
 
-function PhunRunners:makeSprint(zed)
-    self:sprintSpeed(zed)
-    local soundName = "PhunRunners_" .. ZombRand(1, 5)
-    zed:getModData().PhunRunners = {
-        sprinting = true
-    }
-    triggerEvent(self.events.OnSprinterSpottedPlayer, zed)
-    if zed:getEmitter():isPlaying(soundName) then
-        return
-    end
-    print("zed " .. tostring(zed:getOnlineID()) .. " is sprinting")
-    local vol = (SandboxVars.PhunRunners and SandboxVars.PhunRunners.PhunRunnersSprinterVolume or 25) * .01
-    local soundEmitter = getWorld():getFreeEmitter()
-    local hnd = soundEmitter:playSound(soundName, zed:getX(), zed:getY(), zed:getZ())
-    soundEmitter:setVolume(hnd, vol)
-
-end
-
 function PhunRunners:normalSpeed(zed)
     zed:makeInactive(true);
     sandboxOptions:set("ZombieLore.Speed", NORMAL)
+    zed:getModData().PhunRunners.sprinting = false
     zed:makeInactive(false);
 end
 
-function PhunRunners:makeNormal(zed)
-    print("makeNormal")
-    self:normalSpeed(zed)
-    zed:getModData().PhunRunners = {
-        sprinting = false
-    }
-    print("zed " .. tostring(zed:getOnlineID()) .. " is now normal")
+function PhunRunners:sprintSpeed(zed)
+    zed:makeInactive(true);
+    sandboxOptions:set("ZombieLore.Speed", SPRINT)
+    zed:getModData().PhunRunners.sprinting = true
+    zed:makeInactive(false);
+    sandboxOptions:set("ZombieLore.Speed", NORMAL)
 end
-local ids = {}
-local banditsIntegration = nil
 
-local function getDistance(from, to)
-    local x = math.abs(from.x - to.x)
-    local y = math.abs(from.y - to.y)
-    return math.sqrt(x ^ 2 + y ^ 2)
+local tickRate = 20
+
+function PhunRunners:recalcOutfits()
+    local total = 0
+    local month = getGameTime():getMonth()
+    local day = getGameTime():getDay()
+
+    local items = {}
+
+    if month == 11 then
+        if day <= 27 then
+            self.outfit = self.baseOutfits.christmas
+        else
+            self.outfit = self.baseOutfits.party
+        end
+    end
+
 end
 
 function PhunRunners:updateZed(zed)
 
-    if banditsIntegration == nil then
-        banditsIntegration = getActivatedMods():contains("Bandits")
-    end
-
-    if banditsIntegration == true then
-        local data = zed:getModData()
-        if data and data.brain then
-            -- this is a bandit
-            return
-        end
-    end
-
-    local id = tostring(zed:getOnlineID())
-
-    local player = zed:getTarget()
-
-    if player == nil or instanceof(player, "IsoPlayer") == false or not player:isLocalPlayer() then
+    local zData = self:getZedData(zed)
+    if zData == nil then
         return
     end
 
-    -- get zed modData
-    if zed:getModData().PhunRunners == nil then
-
-        -- player could have just logged, so need to test if the zed is already sprinter?
-
-        zed:getModData().PhunRunners = {
-            ticks = 0
-        }
+    if zData.sprinter == true and zData.dressed == nil and zed:isSkeleton() then
+        -- cannot change to skeleton and dress in same update
+        -- so we dress them after we convert to sprinter
+        zData.dressed = true
+        self:decorateZed(zed)
     end
-    local zData = zed:getModData().PhunRunners
 
-    -- only check every so x ticks
-    if zData.ticks == nil or (zData.ticks > 0 and zData.ticks < self.settings.tickDeffer) then
-        zData.ticks = (zData.ticks or 0) + 1
+    -- throttle checks. First time will pass because its nil
+    if zData.tick ~= nil and zData.tick < tickRate then
+        zData.tick = zData.tick + 1
         return
     end
+    zData.tick = 1
 
-    -- reset ticks
-    zData.ticks = 1
+    -- print(tostring(zData.id), tostring(zed:isSkeleton()), tostring(zed:getVisual():isSkeleton()))
 
-    local playerData = self:getPlayerData(player)
-
-    if playerData.spawnSprinters and playerData.modifier > 0 and playerData.risk > 0 then
-
-        -- if zData.modifier ~= playerData.modifier and zData.sprinting ~= true then
-        --     if (zData.modifier or 0) > 0 and (zData.modifier or 0) < 100 and playerData.modifier > 0 then
-        --         self:makeNormal(zed)
-        --         zData.sprinting = nil
-        --     end
-        -- end
-        zData.modifier = playerData.modifier
-
-        if zData.sprinting == true then
-
-            if self.settings.slowInLight > 0 then
-                local zsquare = zed:getCurrentSquare()
-                local light = zsquare:getLightLevel(player:getPlayerNum())
-
-                -- local activeLight = player:getActiveLightItem()
-                -- local distance = activeLight and player:getLightDistance() or 0
-                -- if activeLight then
-                --     print("Active light! ", tostring(distance))
-                -- else
-                --     print("No active light", tostring(distance))
-                -- end
-
-                if (getDistance({
-                    x = player:getX(),
-                    y = player:getY()
-                }, {
-                    x = zed:getX(),
-                    y = zed:getY()
-                }) < 4) then
-                    if zData.lightSupressed == true then
-                        self:sprintSpeed(zed)
-                        zData.lightSupressed = false
-                    end
-                elseif not zData.lightSupressed and light > self.settings.slowInLight then
-                    -- its too bright, make them walk
-                    print(string.format("its too bright: %.2f/%.2f, make them walk ", light, self.settings.slowInLight))
-                    self:normalSpeed(zed)
-                    zData.lightSupressed = true
-                elseif zData.lightSupressed and light < self.settings.slowInLight then
-                    -- its dark enough, make them run
-                    print(string.format("its too dark: %.2f/%.2f, make them run ", light, self.settings.slowInLight))
-                    self:sprintSpeed(zed)
-                    zData.lightSupressed = false
-                end
-            end
-
-            -- any other logic to revert them
-
-        elseif zData.sprinting == nil then
-
-            -- we haven't tested this zed yet
-            zData.sprinting = false
-            -- zData.location = PhunZones:getLocation(zed)
-            if playerData.risk > 0 then
-                local risk = playerData.risk * ((playerData.modifier or 0) * 0.01)
-                print("risk is ", tostring(risk), " vs ", tostring(playerData.risk), " with modifier of ",
-                    tostring(playerData.modifier))
-                if risk > 0 and ZombRand(100) <= playerData.risk then
-                    self:makeSprint(zed)
-                end
-            end
-        end
-    else
-        if zData.sprinting == true then
-            self:makeNormal(zed)
-            zData.sprinting = false
-        end
-        zData = {
-            ticks = 1
-        }
+    if zData.sprinter ~= false then
+        self:testPlayers(zed, zData)
     end
+
+    -- is a sprinter, but not changed visual yet
+    if zData.sprinter and not zed:isSkeleton() then
+        zed:setSkeleton(true)
+    elseif not zData.sprinter and zed:isSkeleton() then
+        zed:setSkeleton(false)
+    end
+
+    if zData.sprinter and zData.sprinting and not zData.screamed and instanceof(zed:getTarget(), "IsoPlayer") then
+        self:scream(zed, zData)
+    end
+
 end
 
-local diffText = {"minimal risk", "low risk", "moderate risk", "high risk", "extreme risk"}
+local diffText = {"min", "low", "moderate", "high", "extreme"}
 
 function PhunRunners:getSummary(playerObj)
 
@@ -198,35 +105,49 @@ function PhunRunners:getSummary(playerObj)
 
     local grace = math.floor(risk.grace or 0)
 
+    table.insert(riskDesc, getText("IGUI_PhunRunners_AreaRisk." .. diffText[(risk.difficulty or 0) + 1]))
+
     if grace > 1 then
         table.insert(riskDesc, getText("IGUI_PhunRunners_IgnoringYouForAnotherXHours", grace) .. "\n")
     elseif grace > 0 then
         table.insert(riskDesc, getText("IGUI_PhunRunners_IgnoringYouForAnotherXHour") .. "\n")
     end
 
-    table.insert(riskDesc, getText("IGUI_PhunRunners_RiskLevel", risk.risk))
-    table.insert(riskDesc, "Area is " .. diffText[(risk.difficulty or 0) + 1])
-    if risk.modifier and risk.modifier > 0 and risk.modifier < 100 then
-        table.insert(riskDesc, "Darkness modifier: " .. tostring(risk.modifier))
-    end
-    if (risk.moonMultiplier or 0) > 1 then
-        table.insert(riskDesc, getText("IGUI_PhunRunners_RiskFromMoon", risk.moonMultiplier))
-    end
+    table.insert(riskDesc, getText("IGUI_PhunRunners_RiskLevel", math.floor(risk.risk + 0.5)))
 
-    table.insert(riskDesc, "\n")
+    local riskd1 = table.concat(riskDesc, "\n")
+
+    riskDesc = {}
+
+    if risk.modifier and risk.modifier > 0 and risk.modifier < 100 then
+        table.insert(riskDesc, getText("IGUI_PhunRunners_Modifier.darkness", tostring(math.floor(risk.modifier + 0.5))))
+    end
+    if PhunRunners.env and PhunRunners.env.moon.category and risk.moonMultiplier then
+
+        if risk.moonMultiplier < 1 then
+            table.insert(riskDesc,
+                getText("IGUI_PhunRunners_RiskFromMoon", "-" .. math.floor(((1 - risk.moonMultiplier) * 100) + .05),
+                    PhunRunners.env.moon.category))
+        elseif risk.moonMultiplier > 1 then
+            table.insert(riskDesc,
+                getText("IGUI_PhunRunners_RiskFromMoon", "+" .. math.floor(((risk.moonMultiplier) * 100) + .05),
+                    PhunRunners.env.moon.category))
+        end
+    end
 
     if risk.modifier and risk.modifier > 0 then
-
+        table.insert(riskDesc, "\n")
         if risk.modifier >= 100 then
-            table.insert(riskDesc, "Zombies are rabid")
+            table.insert(riskDesc, getText("IGUI_PhunRunners_ZedsAreRabid"))
         else
             table.insert(riskDesc, getText("IGUI_PhunRunners_ZedsAreRestless"))
         end
-        -- if risk.risk == 0 then
-        --     table.insert(riskDesc, "But sprinters seem to be ignoring you")
-        -- end
     else
-        table.insert(riskDesc, getText("IGUI_PhunRunners_ZedsAreSettling"))
+        table.insert(riskDesc, "\n" .. getText("IGUI_PhunRunners_ZedsAreSettling"))
+    end
+
+    if #riskDesc > 0 then
+        riskd1 = riskd1 .. "\n" .. getText("IGUI_PhunRunners_Modifiers") .. ":\n " .. table.concat(riskDesc, "\n ")
     end
 
     local results = {
@@ -235,7 +156,7 @@ function PhunRunners:getSummary(playerObj)
         restless = risk.restless == true,
         title = risk.zone and risk.zone.title or "Wilderness",
         subtitle = risk.zone and risk.zone.subtitle or nil,
-        description = table.concat(riskDesc, "\n")
+        description = riskd1
 
     }
 

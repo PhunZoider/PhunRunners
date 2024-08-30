@@ -1,7 +1,13 @@
 PhunRunners = {
     inied = false,
     name = "PhunRunners",
-    commands = {},
+    commands = {
+        createSprinter = "createSprinter",
+        registerSprinter = "registerSprinter",
+        unregisterSprinter = "unregisterSprinter"
+    },
+    lastUpdated = 0,
+    lastTransmitted = 0,
     settings = {
         tickDeffer = 50,
         graceTotalHours = 24,
@@ -25,8 +31,93 @@ PhunRunners = {
         OnSprinterSpottedPlayer = "OnPhunRunnerSprinterSpottedPlayer",
         OnPhunRunnersZedDied = "OnPhunRunnersZedDied",
         OnPhunRunnersPlayerUpdated = "OnPhunRunnersPlayerUpdated"
-    }
+    },
+    baseOutfits = {
+        christmas = {
+            male = {
+                Hat = {{
+                    type = "AuthenticZClothing.Hat_SantaHatBluePattern"
+                }, {
+                    type = "Base.Hat_SantaHat"
+                }, {
+                    type = "Base.Hat_SantaHat"
+                }, {
+                    type = "Base.Hat_SantaHat"
+                }, {
+                    type = "Base.Hat_SantaHat"
+                }, {
+                    type = "Base.Hat_SantaHat"
+                }, {
+                    type = "Base.Hat_SantaHat"
+                }, {
+                    type = "Base.Hat_SantaHatGreen"
+                }}
+            },
+            female = {
+                Hat = {{
+                    type = "AuthenticZClothing.Hat_SantaHatBluePattern"
+                }, {
+                    type = "Base.Hat_SantaHat"
+                }, {
+                    type = "Base.Hat_SantaHat"
+                }, {
+                    type = "Base.Hat_SantaHat"
+                }, {
+                    type = "Base.Hat_SantaHat"
+                }, {
+                    type = "Base.Hat_SantaHat"
+                }, {
+                    type = "Base.Hat_SantaHat"
+                }, {
+                    type = "Base.Hat_SantaHatGreen"
+                }}
+            }
+
+        },
+        party = {
+            male = {
+                Hat = {{
+                    type = "AuthenticZClothing.Hat_ClownConeHead"
+                }, {
+                    type = "Base.Hat_PartyHat_TINT"
+                }, {
+                    type = "Base.Hat_PartyHat_TINT"
+                }, {
+                    type = "Base.Hat_PartyHat_TINT"
+                }, {
+                    type = "Base.Hat_PartyHat_TINT"
+                }, {
+                    type = "Base.Hat_PartyHat_TINT"
+                }, {
+                    type = "Base.Hat_PartyHat_TINT"
+                }}
+            },
+            female = {
+                Hat = {{
+                    type = "AuthenticZClothing.Hat_ClownConeHead"
+                }, {
+                    type = "Base.Hat_PartyHat_TINT"
+                }, {
+                    type = "Base.Hat_PartyHat_TINT"
+                }, {
+                    type = "Base.Hat_PartyHat_TINT"
+                }, {
+                    type = "Base.Hat_PartyHat_TINT"
+                }, {
+                    type = "Base.Hat_PartyHat_TINT"
+                }, {
+                    type = "Base.Hat_PartyHat_TINT"
+                }}
+            }
+
+        }
+    },
+    outfit = nil
 }
+
+local phunZones = nil
+local phunStats = nil
+local sandbox = SandboxVars.PhunRunners
 
 for _, event in pairs(PhunRunners.events) do
     if not Events[event] then
@@ -34,31 +125,11 @@ for _, event in pairs(PhunRunners.events) do
     end
 end
 
-function PhunRunners:getZedData(zed)
-
-    if not self.zeds[tostring(zed:getOnlineID())] then
-        self.zeds[tostring(zed:getOnlineID())] = {
-            sprinting = false,
-            tested = false,
-            created = getTimestamp(),
-            modified = getTimestamp(),
-            targetName = nil,
-            isSupressed = false,
-            ticks = nil
-        }
-    end
-    return self.zeds[tostring(zed:getOnlineID())]
-end
-
-function PhunRunners:cleanZedData()
-
-end
-
 function PhunRunners:getPlayerData(playerObj)
     local key = nil
     if type(playerObj) == "string" then
         key = playerObj
-    else
+    elseif playerObj then
         key = playerObj:getUsername()
     end
     if key and string.len(key) > 0 then
@@ -175,6 +246,70 @@ function PhunRunners:getEnvironment(refresh)
     return results
 end
 
+function PhunRunners:registerSprinter(zid, skipNotify)
+    if zid and not self.registry[zid] then
+        self.registry[zid] = getGameTime():getWorldAgeHours()
+        print("Registered ", zid)
+
+        if isClient() and not skipNotify then
+            local p = getPlayer()
+            sendClientCommand(p, self.name, self.commands.registerSprinter, {
+                id = zid
+            })
+        elseif isServer() then
+            print("Sending server command ", self.name, self.commands.registerSprinter, zid)
+            sendServerCommand(self.name, self.commands.registerSprinter, {
+                id = zid
+            })
+        end
+
+    end
+end
+
+function PhunRunners:unregisterSprinter(zid, skipNotify)
+    if zid and self.registry[zid] then
+        self.registry[zid] = nil
+        print("Unregistered ", zid)
+
+        if isClient() and not skipNotify then
+            sendClientCommand(getPlayer(), self.name, self.commands.unregisterSprinter, {
+                id = zid
+            })
+        elseif isServer() and not skipNotify then
+            print("Sending server command ", self.name, self.commands.unregisterSprinter, zid)
+            sendServerCommand(self.name, self.commands.unregisterSprinter, {
+                id = zid
+            })
+        end
+
+    end
+end
+
+function PhunRunners:init()
+    ModData.add(self.name, {})
+    self.registry = ModData.getOrCreate(self.name)
+    if phunZones == nil then
+        phunZones = PhunZones or false
+    end
+    if phunStats == nil then
+        phunStats = PhunStats or false
+    end
+end
+
+function PhunRunners:getId(zedObj)
+    if zedObj then
+        if instanceof(zedObj, "IsoZombie") then
+            if zedObj:isZombie() then
+                if isClient() or isServer() then
+                    return zedObj:getOnlineID()
+                else
+                    return zombie:getID()
+                end
+            end
+        end
+    end
+end
+
 function PhunRunners:updatePlayer(playerObj)
 
     if not playerObj or not playerObj:isLocalPlayer() then
@@ -184,12 +319,15 @@ function PhunRunners:updatePlayer(playerObj)
     local name = playerObj:getUsername()
     local playerData = self:getPlayerData(name)
     local env = self.env
-    local zone = PhunZones.players[name] or {
+    local zone = phunZones and phunZones:updateLocation(playerObj) or {
         difficulty = 0
     }
-    local pstats = PhunStats:getPlayerData(name) or {
+    local pstats = phunStats and phunStats:getPlayerData(name) or {
+        current = {
+            hours = playerObj:getHoursSurvived()
+        },
         total = {
-            hours = 0
+            hours = playerObj:getHoursSurvived()
         }
     }
 
@@ -203,43 +341,47 @@ function PhunRunners:updatePlayer(playerObj)
     local graceTotalHours = hours < self.settings.graceTotalHours and self.settings.graceTotalHours - hours or 0
     local sprinterKillRisk = 0
     local timerRisk = 0
-    local zoneRisk = 0
+    local zoneRisk = sandbox.TotalZone1
 
     if hours > 1000 then
-        timerRisk = 18
+        timerRisk = sandbox.TotalHours5
     elseif hours > 500 then
-        timerRisk = 12
+        timerRisk = sandbox.TotalHours4
     elseif hours > 250 then
-        timerRisk = 8
+        timerRisk = sandbox.TotalHours3
     elseif hours > 100 then
-        timerRisk = 4
+        timerRisk = sandbox.TotalHours2
     elseif hours > 50 then
-        timerRisk = 2
+        timerRisk = sandbox.TotalHours1
     end
 
     if totalSprinters > 100 then
-        sprinterKillRisk = 12
+        sprinterKillRisk = sandbox.TotalSprinters5
     elseif totalSprinters > 50 then
-        sprinterKillRisk = 8
+        sprinterKillRisk = sandbox.TotalSprinters4
     elseif totalSprinters > 25 then
-        sprinterKillRisk = 6
+        sprinterKillRisk = sandbox.TotalSprinters3
     elseif totalSprinters > 10 then
-        sprinterKillRisk = 4
+        sprinterKillRisk = sandbox.TotalSprinters2
     elseif totalSprinters > 5 then
-        sprinterKillRisk = 2
+        sprinterKillRisk = sandbox.TotalSprinters1
     end
 
     if zoneDifficulty > 4 then
-        zoneRisk = 100
+        zoneRisk = sandbox.TotalZone5
     elseif zoneDifficulty > 3 then
-        zoneRisk = 15
+        zoneRisk = sandbox.TotalZone4
     elseif zoneDifficulty > 2 then
-        zoneRisk = 10
+        zoneRisk = sandbox.TotalZone3
     elseif zoneDifficulty > 1 then
-        zoneRisk = 5
+        zoneRisk = sandbox.TotalZone2
     end
 
-    local totalRisk = (zoneRisk + timerRisk + sprinterKillRisk) * self.settings.moon[env.moon.phase + 1]
+    local moonPhaseModifierValue = sandbox['TotalMoon' .. tostring(env.moon.phase or 0)]
+
+    moonPhaseModifierValue = moonPhaseModifierValue * .01
+
+    local totalRisk = (zoneRisk + timerRisk + sprinterKillRisk) * moonPhaseModifierValue
     totalRisk = totalRisk > 100 and 100 or totalRisk
 
     local modifier = 0
@@ -264,7 +406,7 @@ function PhunRunners:updatePlayer(playerObj)
         zoneRisk = zoneRisk,
         timerRisk = timerRisk,
         sprinterKillRisk = sprinterKillRisk,
-        moonMultiplier = self.settings.moon[env.moon.phase + 1],
+        moonMultiplier = moonPhaseModifierValue,
         grace = grace
     }
 
@@ -272,63 +414,6 @@ function PhunRunners:updatePlayer(playerObj)
         pd.risk = 0
         pd.restless = false
         pd.spawnSprinters = false
-        -- else
-
-        --     local zoneRisk = 0
-        --     if zoneDifficulty > 4 then
-        --         zoneRisk = 100
-        --     elseif zoneDifficulty > 3 then
-        --         zoneRisk = 15
-        --     elseif zoneDifficulty > 2 then
-        --         zoneRisk = 10
-        --     elseif zoneDifficulty > 1 then
-        --         zoneRisk = 5
-        --     end
-
-        --     local timerRisk = 0
-        --     if hours > 1000 then
-        --         timerRisk = 18
-        --     elseif hours > 500 then
-        --         timerRisk = 12
-        --     elseif hours > 250 then
-        --         timerRisk = 8
-        --     elseif hours > 100 then
-        --         timerRisk = 4
-        --     elseif hours > 50 then
-        --         timerRisk = 2
-        --     end
-
-        --     local sprinterKillRisk = 0
-        --     if totalSprinters > 100 then
-        --         timerRisk = 12
-        --     elseif totalSprinters > 50 then
-        --         timerRisk = 8
-        --     elseif totalSprinters > 25 then
-        --         timerRisk = 6
-        --     elseif totalSprinters > 10 then
-        --         timerRisk = 4
-        --     elseif totalSprinters > 5 then
-        --         timerRisk = 2
-        --     end
-
-        --     if zoneRisk == 0 or timerRisk == 0 then
-        --         -- no risk
-        --         pd.risk = 0
-        --         pd.spawnSprinters = false
-        --         pd.restless = false
-
-        --     elseif zoneRisk == 100 then
-        --         -- always on area
-        --         pd.risk = 100
-        --         pd.spawnSprinters = true
-        --         pd.restless = true
-        --     else
-
-        --         pd.risk = (zoneRisk + timerRisk + sprinterKillRisk) * self.settings.moon[env.moon.phase + 1]
-        --         pd.spawnSprinters = env.value > 30
-
-        --     end
-
     end
 
     if pd.spawnSprinters ~= playerData.spawnSprinters then
