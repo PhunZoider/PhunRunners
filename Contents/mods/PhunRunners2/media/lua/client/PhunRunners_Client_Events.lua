@@ -51,6 +51,7 @@ Events.OnTick.Add(setup)
 Events.EveryOneMinute.Add(function()
     PhunRunners:updateEnvironment()
     PhunRunners:updatePlayers()
+    PhunRunners:recalcOutfits()
 end)
 
 Events.OnDawn.Add(function()

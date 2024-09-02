@@ -59,6 +59,7 @@ function PhunRunners:decorateZed(zed)
             break
         end
         local bodyLocation = item:getScriptItem():getBodyLocation()
+
         parts[bodyLocation] = item
     end
 
@@ -67,20 +68,36 @@ function PhunRunners:decorateZed(zed)
     for k, v in pairs(item) do
 
         local garb = nil
-        if #v > 0 then
-            garb = v[ZombRand(#v) + 1]
+        local garbs = nil
+        if v.probability and (v.totalItemProbability or 0) > 0 and ZombRand(100) < v.probability then
+            garbs = v.items
         end
-        if garb then
-            if parts[k] then
-                parts[k]:setItemType(garb.type)
-                doUpdate = true
-            else
-                local iv = ItemVisual:new()
-                iv:setItemType(garb.type)
-                zed:getItemVisuals():add(iv)
-                doUpdate = true
+
+        if garbs then
+            local rnd = ZombRand(v.totalItemProbability)
+            local total = 0
+            for _, g in ipairs(garbs) do
+                if g and g.probability > 0 then
+                    total = total + g.probability
+                    if rnd < total then
+                        garb = g
+                        break
+                    end
+                end
             end
 
+            if garb then
+                if parts[k] then
+                    parts[k]:setItemType(garb.type)
+                    doUpdate = true
+                else
+                    local iv = ItemVisual:new()
+                    iv:setItemType(garb.type)
+                    zed:getItemVisuals():add(iv)
+                    doUpdate = true
+                end
+
+            end
         end
 
     end

@@ -29,87 +29,161 @@ PhunRunners = {
     players = {},
     events = {
         OnSprinterSpottedPlayer = "OnPhunRunnerSprinterSpottedPlayer",
-        OnSprinterDeath = "OnPhunRunnersSprinterDeath"
+        OnSprinterDeath = "OnPhunRunnersSprinterDeath",
+        OnPlayerStartSpawningSprinters = "OnPhunRunnersPlayerStartSpawningSprinters",
+        OnPlayerStopSpawningSprinters = "OnPhunRunnersPlayerStopSpawningSprinters",
+        OnPlayerRiskUpdate = "OnPhunRunnersPlayerRiskUpdate",
+        OnPlayerEnvUpdate = "OnPhunRunnersPlayerEnvUpdate"
     },
     baseOutfits = {
         christmas = {
             male = {
-                Hat = {{
-                    type = "AuthenticZClothing.Hat_SantaHatBluePattern"
-                }, {
-                    type = "Base.Hat_SantaHat"
-                }, {
-                    type = "Base.Hat_SantaHat"
-                }, {
-                    type = "Base.Hat_SantaHat"
-                }, {
-                    type = "Base.Hat_SantaHat"
-                }, {
-                    type = "Base.Hat_SantaHat"
-                }, {
-                    type = "Base.Hat_SantaHat"
-                }, {
-                    type = "Base.Hat_SantaHatGreen"
-                }}
+                Hat = {
+                    probability = 100,
+                    items = {{
+                        type = "AuthenticZClothing.Hat_SantaHatBluePattern",
+                        mod = "Authentic Z - Current",
+                        probability = 10
+                    }, {
+                        type = "Base.Hat_SantaHat",
+                        probability = 50
+
+                    }, {
+                        type = "Base.Hat_SantaHatGreen",
+                        probability = 10
+                    }}
+                }
             },
             female = {
-                Hat = {{
-                    type = "AuthenticZClothing.Hat_SantaHatBluePattern"
-                }, {
-                    type = "Base.Hat_SantaHat"
-                }, {
-                    type = "Base.Hat_SantaHat"
-                }, {
-                    type = "Base.Hat_SantaHat"
-                }, {
-                    type = "Base.Hat_SantaHat"
-                }, {
-                    type = "Base.Hat_SantaHat"
-                }, {
-                    type = "Base.Hat_SantaHat"
-                }, {
-                    type = "Base.Hat_SantaHatGreen"
-                }}
-            }
+                Hat = {
+                    probability = 100,
+                    items = {{
+                        type = "AuthenticZClothing.Hat_SantaHatBluePattern",
+                        mod = "Authentic Z - Current",
+                        probability = 10
+                    }, {
+                        type = "Base.Hat_SantaHat",
+                        probability = 50
 
+                    }, {
+                        type = "Base.Hat_SantaHatGreen",
+                        probability = 10
+                    }}
+                }
+
+            }
+        },
+        easter = {
+            male = {
+                Hat = {
+                    probability = 100,
+                    items = {{
+                        type = "AuthenticZClothing.BunnyEars",
+                        mod = "Authentic Z - Current",
+                        probability = 10
+                    }, {
+                        type = "Base.Hat_BunnyEarsBlack",
+                        probability = 50
+
+                    }, {
+                        type = "Base.Hat_BunnyEarsWhite",
+                        probability = 10
+                    }}
+                }
+            },
+            female = {
+                Hat = {
+                    probability = 100,
+                    items = {{
+                        type = "AuthenticZClothing.BunnyEars",
+                        mod = "Authentic Z - Current",
+                        probability = 10
+                    }, {
+                        type = "Base.Hat_BunnyEarsBlack",
+                        probability = 50
+
+                    }, {
+                        type = "Base.Hat_BunnyEarsWhite",
+                        probability = 10
+                    }}
+                }
+
+            }
+        },
+        halloween = {
+            male = {
+                FullHelmet = {
+                    probability = 100,
+                    items = {{
+                        type = "HallweensPumpkinHelmets.Hat_Pumpkin_Helmet_Angry",
+                        mod = "HallweensPumpkinHelmets",
+                        probability = 10
+                    }, {
+                        type = "HallweensPumpkinHelmets.Hat_Pumpkin_Helmet_Pirate",
+                        mod = "HallweensPumpkinHelmets",
+                        probability = 1
+
+                    }, {
+                        type = "HallweensPumpkinHelmets.Hat_Pumpkin_Helmet_Surprised",
+                        mod = "HallweensPumpkinHelmets",
+                        probability = 5
+                    }}
+                }
+            },
+            female = {
+                FullHelmet = {
+                    probability = 100,
+                    items = {{
+                        type = "HallweensPumpkinHelmets.Hat_Pumpkin_Helmet_Angry",
+                        mod = "HallweensPumpkinHelmets",
+                        probability = 10
+                    }, {
+                        type = "HallweensPumpkinHelmets.Hat_Pumpkin_Helmet_Pirate",
+                        mod = "HallweensPumpkinHelmets",
+                        probability = 1
+
+                    }, {
+                        type = "HallweensPumpkinHelmets.Hat_Pumpkin_Helmet_Surprised",
+                        mod = "HallweensPumpkinHelmets",
+                        probability = 5
+                    }}
+                }
+
+            }
         },
         party = {
             male = {
-                Hat = {{
-                    type = "AuthenticZClothing.Hat_ClownConeHead"
-                }, {
-                    type = "Base.Hat_PartyHat_TINT"
-                }, {
-                    type = "Base.Hat_PartyHat_TINT"
-                }, {
-                    type = "Base.Hat_PartyHat_TINT"
-                }, {
-                    type = "Base.Hat_PartyHat_TINT"
-                }, {
-                    type = "Base.Hat_PartyHat_TINT"
-                }, {
-                    type = "Base.Hat_PartyHat_TINT"
-                }}
+
+                Hat = {
+                    probability = 100,
+                    items = {{
+                        type = "AuthenticZClothing.Hat_ClownConeHead",
+                        mod = "Authentic Z - Current",
+                        probability = 10
+                    }, {
+                        type = "Base.Hat_PartyHat_TINT",
+                        probability = 80
+
+                    }}
+                }
             },
             female = {
-                Hat = {{
-                    type = "AuthenticZClothing.Hat_ClownConeHead"
-                }, {
-                    type = "Base.Hat_PartyHat_TINT"
-                }, {
-                    type = "Base.Hat_PartyHat_TINT"
-                }, {
-                    type = "Base.Hat_PartyHat_TINT"
-                }, {
-                    type = "Base.Hat_PartyHat_TINT"
-                }, {
-                    type = "Base.Hat_PartyHat_TINT"
-                }, {
-                    type = "Base.Hat_PartyHat_TINT"
-                }}
+                Hat = {
+                    probability = 100,
+                    items = {{
+                        type = "AuthenticZClothing.Hat_ClownConeHead",
+                        mod = "Authentic Z - Current",
+                        probability = 10
+                    }, {
+                        type = "Base.Hat_PartyHat_TINT",
+                        probability = 80
+
+                    }}
+                }
             }
 
         }
+
     },
     outfit = nil
 }

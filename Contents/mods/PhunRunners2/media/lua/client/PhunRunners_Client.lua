@@ -45,12 +45,46 @@ function PhunRunners:recalcOutfits()
 
     local items = {}
 
-    if month == 11 then
-        if day <= 27 then
-            self.outfit = self.baseOutfits.christmas
-        else
-            self.outfit = self.baseOutfits.party
+    self.outfit = nil
+
+    if month == sandbox.MonthChristmas - 1 and day < 28 then
+        -- christmas
+        self.outfit = self.baseOutfits.christmas
+    elseif month == sandbox.MonthChristmas - 1 and day >= 28 then
+        -- nye
+        self.outfit = self.baseOutfits.party
+    elseif month == sandbox.MonthHalloween - 1 then
+        -- halloween
+        self.outfit = self.baseOutfits.halloween
+    elseif month == sandbox.MonthEaster - 1 then
+        -- easter
+        self.outfit = self.baseOutfits.easter
+    end
+
+    if self.outfit ~= nil then
+
+        local genders = {"male", "female"}
+
+        for k, v in pairs(self.outfit) do -- eg, party or christmas
+            for _, partVal in pairs(v) do -- eg male or female
+                -- for _, partVal in pairs(v[g]) do -- eg, Hat or Top
+                local itotals = 0
+                for _, vv in ipairs(partVal.items or {}) do
+                    if not vv.mod or getActivatedMods():contains(vv.mod) then
+                        if not vv.probability then
+                            vv.probability = 10
+                        end
+                        itotals = itotals + vv.probability
+                    else
+                        vv.probability = 0
+                    end
+                end
+                partVal.totalItemProbability = itotals
+                -- end
+
+            end
         end
+
     end
 
 end
@@ -314,11 +348,15 @@ function PhunRunners:updatePlayer(playerObj)
     if pd.spawnSprinters ~= playerData.spawnSprinters then
         if pd.spawnSprinters then
             print("Player ", name, " is now spawning sprinters")
+            triggerEvent(PhunRunners.events.OnPlayerStartSpawningSprinters, playerObj)
             self:startSprintersSound(playerObj)
         else
             print("Player ", name, " is no longer spawning sprinters")
+            triggerEvent(PhunRunners.events.OnPlayerStopSpawningSprinters, playerObj)
             self:stopSprintersSound(playerObj)
         end
+    elseif pd.risk ~= playerData.risk then
+        triggerEvent(PhunRunners.events.OnPlayerRiskUpdate, playerObj, pd)
     end
 
     self.players[name] = pd
