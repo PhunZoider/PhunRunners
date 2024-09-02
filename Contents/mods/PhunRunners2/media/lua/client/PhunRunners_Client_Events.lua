@@ -73,3 +73,68 @@ Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
         PhunRunners.registry = ModData.getOrCreate(PhunRunners.name)
     end
 end)
+
+Events.OnCharacterDeath.Add(function(playerObj)
+    if instanceof(playerObj, "IsoPlayer") then
+        -- a player died. If its local, record the stats
+        if playerObj:isLocalPlayer() then
+            local pdata = playerObj:getModData()
+            if not pdata.PhunRunners then
+                pdata.PhunRunners = {}
+            end
+            if pdata.PhunRunners then
+                pdata.PhunRunners.deaths = (pdata.PhunRunners.deaths or 0) + 1
+                pdata.PhunRunners.hours = (pdata.PhunRunners.hours or 0) + playerObj:getHoursSurvived()
+            end
+        end
+    elseif instanceof(playerObj, "IsoZombie") then
+        -- zed died
+
+        local data = playerObj:getModData()
+        if data and data.brain then
+            -- this is a bandit
+            return
+        end
+
+        data = data and data.PhunRunners or {}
+
+        local player = playerObj:getAttackedBy()
+        if not player:isLocalPlayer() then
+            return
+        end
+        local pdata = player:getModData()
+        if not pdata.PhunRunners then
+            pdata.PhunRunners = {}
+        end
+
+        local vehicle = player and player.getVehicle and player:getVehicle()
+        if vehicle then
+            if vehicle:getDriver() == player then
+                if data and data.sprinting then
+                    -- was a sprinter
+                    pdata.PhunRunners.sprinterKills = (pdata.PhunRunners.sprinterKills or 0) + 1
+                    pdata.PhunRunners.totalSprinterKills = (pdata.PhunRunners.totalSprinterKills or 0) + 1
+                    triggerEvent(PhunRunners.events.OnSprinterDeath, playerObj, player, true)
+                else
+                    -- was a normal
+                    pdata.PhunRunners.kills = (pdata.PhunRunners.kills or 0) + 1
+                    pdata.PhunRunners.totalKills = (pdata.PhunRunners.totalKills or 0) + 1
+                end
+            end
+        else
+            if data and data.sprinting then
+                -- was a sprinter
+                pdata.PhunRunners.sprinterKills = (pdata.PhunRunners.sprinterKills or 0) + 1
+                pdata.PhunRunners.totalSprinterKills = (pdata.PhunRunners.totalSprinterKills or 0) + 1
+                triggerEvent(PhunRunners.events.OnSprinterDeath, playerObj, player)
+            else
+                -- was a normal
+                pdata.PhunRunners.kills = (pdata.PhunRunners.kills or 0) + 1
+                pdata.PhunRunners.totalKills = (pdata.PhunRunners.totalKills or 0) + 1
+            end
+        end
+        print(" --- Player Stats --- ")
+        PhunRunners:printTable(player:getModData().PhunRunners)
+    end
+
+end)

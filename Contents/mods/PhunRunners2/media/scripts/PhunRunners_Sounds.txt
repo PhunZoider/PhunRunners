@@ -47,30 +47,6 @@ module Base
     sound PhunRunners_5
 	{
         category = Vehicle, loop = false, is3D = true,
-        clip { file = media/sound/phunrunners_zed_4.mp3, distanceMax = 20, volume = 0.3f }
-	}
-
-    sound PhunRunners_6
-	{
-        category = Vehicle, loop = false, is3D = true,
-        clip { file = media/sound/phunrunners_zed_4.mp3, distanceMax = 20, volume = 0.3f }
-	}		 
-
-	sound PhuRunners_Start_1
-	{
-        category = Player, loop = false, is3D = true,
-        clip { file = media/sound/phunrunners_start_1.mp3, distanceMax = 20, volume = 0.3f }
-	}
-
-	sound PhuRunners_Start_2
-	{
-        category = Vehicle, loop = false, is3D = true,
-        clip { file = media/sound/phunrunners_start_2.mp3, distanceMax = 20, volume = 0.3f }
-	}
-
-	sound PhuRunners_Start_3
-	{
-        category = Vehicle, loop = false, is3D = true,
-        clip { file = media/sound/phunrunners_start_3.mp3, distanceMax = 20, volume = 0.3f }
-	}
+        clip { file = media/sound/phunrunners_zed_5.mp3, distanceMax = 20, volume = 0.3f }
+	}	 
 }

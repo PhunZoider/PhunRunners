@@ -29,8 +29,7 @@ PhunRunners = {
     players = {},
     events = {
         OnSprinterSpottedPlayer = "OnPhunRunnerSprinterSpottedPlayer",
-        OnPhunRunnersZedDied = "OnPhunRunnersZedDied",
-        OnPhunRunnersPlayerUpdated = "OnPhunRunnersPlayerUpdated"
+        OnSprinterDeath = "OnPhunRunnersSprinterDeath"
     },
     baseOutfits = {
         christmas = {

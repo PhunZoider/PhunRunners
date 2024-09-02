@@ -13,4 +13,12 @@ IGUI_EN = {
     IGUI_PhunRunners_AreaRisk.extreme = "Area is extreme risk"
     IGUI_PhunRunners_Modifier.darkness = "Darkness: -%1%"
     IGUI_PhunRunners_Modifiers = "Modifiers"
+    IGUI_PhunRunners_MoonPhase1 = "New Moon"
+    IGUI_PhunRunners_MoonPhase2 = "Crescent Moon"
+    IGUI_PhunRunners_MoonPhase3 = "First Quarter"
+    IGUI_PhunRunners_MoonPhase4 = "Gibbous Moon"
+    IGUI_PhunRunners_MoonPhase5 = "Full Moon"
+    IGUI_PhunRunners_MoonPhase6 = "Gibbous Moon"
+    IGUI_PhunRunners_MoonPhase7 = "Last Quarter"
+    IGUI_PhunRunners_MoonPhase8 = "Waning Crescent"
 }

@@ -76,8 +76,6 @@ function PhunRunners:updateZed(zed)
     end
     zData.tick = 1
 
-    -- print(tostring(zData.id), tostring(zed:isSkeleton()), tostring(zed:getVisual():isSkeleton()))
-
     if zData.sprinter ~= false then
         self:testPlayers(zed, zData)
     end
@@ -99,7 +97,7 @@ function PhunRunners:updateEnvironment()
 
     if self.env == nil then
         -- caches the current environment
-        self.env = self:getEnvironment()
+        self.env = self:getEnvironment(true)
         return
     end
 
@@ -118,7 +116,11 @@ function PhunRunners:updateEnvironment()
 
 end
 
-function PhunRunners:getEnvironment()
+function PhunRunners:getEnvironment(refresh)
+
+    if not refresh and self.env then
+        return self.env
+    end
 
     local climate = getClimateManager()
 
@@ -210,16 +212,34 @@ function PhunRunners:updatePlayer(playerObj)
 
     local name = playerObj:getUsername()
     local playerData = self:getPlayerData(name)
-    local env = self.env
+    local env = self:getEnvironment()
+
+    if phunZones == nil then
+        phunZones = PhunZones
+    else
+        phunZones = PhunZones or false
+    end
+
+    if phunStats == nil then
+        phunStats = PhunStats
+    else
+        phunStats = PhunStats or false
+    end
+
     local zone = phunZones and phunZones:updateLocation(playerObj) or {
         difficulty = 0
     }
+    local pData = playerObj:getModData()
     local pstats = phunStats and phunStats:getPlayerData(name) or {
         current = {
-            hours = playerObj:getHoursSurvived()
+            hours = playerObj:getHoursSurvived(),
+            kills = pData.kills or 0,
+            sprinterKills = pData.sprinterKills or 0
         },
         total = {
-            hours = playerObj:getHoursSurvived()
+            hours = playerObj:getHoursSurvived() + (pData.hours or 0),
+            kills = pData.totalKills or 0,
+            sprinterKills = pData.totalKills or 0
         }
     }
 
@@ -337,9 +357,6 @@ function PhunRunners:updatePlayers()
     end
 end
 
-local moonPhaseNames = {"New Moon", "Crescent Moon", "First Quarter", "Gibbous Moon", "Full Moon", "Gibbous Moon",
-                        "Last Quarter", "Waning Crescent"}
-
 function PhunRunners:getSummary(playerObj)
 
     local risk = PhunRunners:getPlayerData(playerObj)
@@ -347,7 +364,13 @@ function PhunRunners:getSummary(playerObj)
 
     local grace = math.floor(risk.grace or 0)
 
-    table.insert(riskDesc, getText("IGUI_PhunRunners_AreaRisk." .. diffText[(risk.difficulty or 0) + 1]))
+    local diffSuffix = "extreme"
+
+    if diffText[tonumber((risk.difficulty or 0)) + 1] then
+        diffSuffix = diffText[tonumber((risk.difficulty or 0)) + 1]
+    end
+
+    table.insert(riskDesc, getText("IGUI_PhunRunners_AreaRisk." .. diffSuffix))
 
     if grace > 1 then
         table.insert(riskDesc, getText("IGUI_PhunRunners_IgnoringYouForAnotherXHours", grace) .. "\n")
@@ -370,11 +393,11 @@ function PhunRunners:getSummary(playerObj)
         if risk.moonMultiplier < 1 then
             table.insert(riskDesc,
                 getText("IGUI_PhunRunners_RiskFromMoon", "-" .. math.floor(((1 - risk.moonMultiplier) * 100) + .05),
-                    moonPhaseNames[PhunRunners.env.moon + 1]))
+                    getText("IGUI_PhunRunners_MoonPhase" .. PhunRunners.env.moon + 1)))
         elseif risk.moonMultiplier > 1 then
             table.insert(riskDesc,
                 getText("IGUI_PhunRunners_RiskFromMoon", "+" .. math.floor(((risk.moonMultiplier) * 100) + .05),
-                    moonPhaseNames[PhunRunners.env.moon + 1]))
+                    getText("IGUI_PhunRunners_MoonPhase" .. PhunRunners.env.moon + 1)))
         end
     end
 
