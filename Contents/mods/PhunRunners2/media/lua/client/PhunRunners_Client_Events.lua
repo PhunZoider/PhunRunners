@@ -68,7 +68,6 @@ end)
 
 Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
     if tableName == PhunRunners.name and type(tableData) == "table" then
-        print("Registered Runners")
         PhunRunners:printTable(tableData)
         ModData.add(PhunRunners.name, tableData)
         PhunRunners.registry = ModData.getOrCreate(PhunRunners.name)
@@ -134,8 +133,7 @@ Events.OnCharacterDeath.Add(function(playerObj)
                 pdata.PhunRunners.totalKills = (pdata.PhunRunners.totalKills or 0) + 1
             end
         end
-        print(" --- Player Stats --- ")
-        PhunRunners:printTable(player:getModData().PhunRunners)
+
     end
 
 end)

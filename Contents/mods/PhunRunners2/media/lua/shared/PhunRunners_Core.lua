@@ -6,29 +6,8 @@ PhunRunners = {
         registerSprinter = "registerSprinter",
         unregisterSprinter = "unregisterSprinter"
     },
-    lastUpdated = 0,
-    lastTransmitted = 0,
-    settings = {
-        tickDeffer = 50,
-        graceTotalHours = 24,
-        graceHours = 1,
-        slowInLight = 0.7,
-        zones = {{
-            intensity = 2
-        }, {
-            intensity = 5
-        }, {
-            intensity = 10
-        }, {
-            intensity = 15
-        }},
-        moon = {0.5, 0.8, 0.9, 1.1, 2, 1.1, 0.9, 0.8}
-
-    },
-    zeds = {},
     players = {},
     events = {
-        OnSprinterSpottedPlayer = "OnPhunRunnerSprinterSpottedPlayer",
         OnSprinterDeath = "OnPhunRunnersSprinterDeath",
         OnPlayerStartSpawningSprinters = "OnPhunRunnersPlayerStartSpawningSprinters",
         OnPlayerStopSpawningSprinters = "OnPhunRunnersPlayerStopSpawningSprinters",
@@ -231,13 +210,10 @@ function PhunRunners:unregisterSprinter(zid, skipNotify)
 end
 
 function PhunRunners:init()
-    ModData.add(self.name, {})
-    self.registry = ModData.getOrCreate(self.name)
-    if phunZones == nil then
-        phunZones = PhunZones or false
-    end
-    if phunStats == nil then
-        phunStats = PhunStats or false
+    if not self.inied then
+        self.inied = true
+        ModData.add(self.name, {})
+        self.registry = ModData.getOrCreate(self.name)
     end
 end
 

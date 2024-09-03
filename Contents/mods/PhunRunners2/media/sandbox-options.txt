@@ -71,32 +71,22 @@ option PhunRunners.TotalMoonModifier
     translation = PhunRunnersMoonModifier
 }
 
-option PhunRunners.MonthEaster
+option PhunRunners.GraceTotalHours
 {
     type = integer, 
-    default = 4, 
+    default = 24, 
     min = 0,
-    max = 12,
+    max = 999,
     page=PhunRunners,
-    translation = PhunRunnersMonthEaster
+    translation = PhunRunnersGraceTotalHours
 }
 
-option PhunRunners.MonthHalloween
+option PhunRunners.GraceHours
 {
     type = integer, 
-    default = 10, 
+    default = 1, 
     min = 0,
-    max = 12,
+    max = 999,
     page=PhunRunners,
-    translation = PhunRunnersMonthHalloween
-}
-
-option PhunRunners.MonthChristmas
-{
-    type = integer, 
-    default = 12, 
-    min = 0,
-    max = 12,
-    page=PhunRunners,
-    translation = PhunRunnersMonthChristmas
+    translation = PhunRunnersGraceHours
 }

@@ -2,7 +2,6 @@ if isServer() then
     return
 end
 local PhunRunners = PhunRunners
-local PhunZones = PhunZones
 local PhunStats = PhunStats
 local sandbox = SandboxVars.PhunRunners
 local sandboxOptions = getSandboxOptions()
@@ -47,16 +46,16 @@ function PhunRunners:recalcOutfits()
 
     self.outfit = nil
 
-    if month == sandbox.MonthChristmas - 1 and day < 28 then
+    if month == 11 and day < 28 then
         -- christmas
         self.outfit = self.baseOutfits.christmas
-    elseif month == sandbox.MonthChristmas - 1 and day >= 28 then
+    elseif month == 11 and day >= 28 then
         -- nye
         self.outfit = self.baseOutfits.party
-    elseif month == sandbox.MonthHalloween - 1 then
+    elseif month == 9 then
         -- halloween
         self.outfit = self.baseOutfits.halloween
-    elseif month == sandbox.MonthEaster - 1 then
+    elseif month == 4 then
         -- easter
         self.outfit = self.baseOutfits.easter
     end
@@ -194,7 +193,6 @@ local modifiers = {
     moon = nil
 }
 
-local phunZones = nil
 local phunStats = nil
 
 function PhunRunners:updatePlayer(playerObj)
@@ -248,22 +246,18 @@ function PhunRunners:updatePlayer(playerObj)
     local playerData = self:getPlayerData(name)
     local env = self:getEnvironment()
 
-    if phunZones == nil then
-        phunZones = PhunZones
-    else
-        phunZones = PhunZones or false
-    end
-
     if phunStats == nil then
         phunStats = PhunStats
     else
         phunStats = PhunStats or false
     end
 
-    local zone = phunZones and phunZones:updateLocation(playerObj) or {
+    local pData = playerObj:getModData()
+
+    local zone = pData.PhunRunnersZone or {
         difficulty = 0
     }
-    local pData = playerObj:getModData()
+
     local pstats = phunStats and phunStats:getPlayerData(name) or {
         current = {
             hours = playerObj:getHoursSurvived(),
@@ -283,8 +277,11 @@ function PhunRunners:updatePlayer(playerObj)
     local totalSprinters = pstats.total.sprinters or 0
     local totalDeaths = pstats.total.deaths or 0
     local charHours = pstats.current.hours or 0
-    local graceHours = charHours < self.settings.graceHours and self.settings.graceHours - charHours or 0
-    local graceTotalHours = hours < self.settings.graceTotalHours and self.settings.graceTotalHours - hours or 0
+    local graceHours = charHours <
+                           (SandboxVars.PhunRunners.GraceHours and SandboxVars.PhunRunners.GraceHours - charHours or 0)
+    local graceTotalHours = hours <
+                                (SandboxVars.PhunRunners.GraceTotalHours and SandboxVars.PhunRunners.GraceTotalHours -
+                                    hours or 0)
     local sprinterKillRisk = 0
     local timerRisk = 0
     local zoneRisk = 0
@@ -339,7 +336,8 @@ function PhunRunners:updatePlayer(playerObj)
         grace = grace
     }
 
-    if zoneDifficulty == 0 or charHours < self.settings.graceHours or hours < self.settings.graceTotalHours then
+    if zoneDifficulty == 0 or charHours <= SandboxVars.PhunRunners.GraceHours or hours <=
+        SandboxVars.PhunRunners.GraceTotalHours then
         pd.risk = 0
         pd.restless = false
         pd.spawnSprinters = false
