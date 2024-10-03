@@ -163,13 +163,16 @@ function PhunRunners:getEnvironment(refresh)
     local fogIntensity = math.floor((climate:getFogIntensity() * 100) + 0.5)
 
     -- adjust daylight intensity by fog intensity
-    local adjustedLightIntensity = math.max(0, lightIntensity - fogIntensity)
+    local adjustedLightIntensity = lightIntensity; --  math.max(0, lightIntensity - (lightIntensity * (fogIntensity * 0.01)))
+    if fogIntensity > 0 then
+        adjustedLightIntensity = math.max(0, lightIntensity - (lightIntensity * climate:getFogIntensity()))
+    end
 
     -- get current moon phase
     local moonPhase = getClimateMoon():getCurrentMoonPhase()
 
     return {
-        value = (100 - adjustedLightIntensity),
+        value = adjustedLightIntensity,
         light = lightIntensity,
         fog = fogIntensity,
         moon = getClimateMoon():getCurrentMoonPhase()
@@ -222,7 +225,10 @@ function PhunRunners:updatePlayer(playerObj)
             raw = luautils.split(raw, ";")
             if raw and #raw > 0 then
                 if v.array then
-                    modifiers[k] = raw
+                    modifiers[k] = {}
+                    for i = 1, #raw do
+                        modifiers[k][i] = tonumber(raw[i])
+                    end
                 else
                     modifiers[k] = {}
                     for i = 1, #raw do
@@ -244,7 +250,7 @@ function PhunRunners:updatePlayer(playerObj)
 
     local name = playerObj:getUsername()
     local playerData = self:getPlayerData(name)
-    local env = self:getEnvironment()
+    local env = self:getEnvironment(true)
 
     if phunStats == nil then
         phunStats = PhunStats
@@ -275,16 +281,14 @@ function PhunRunners:updatePlayer(playerObj)
     local hours = pstats.total.hours or 0
     local totalKills = pstats.total.kills or 0
     local totalSprinters = pstats.total.sprinters or 0
-    local totalDeaths = pstats.total.deaths or 0
     local charHours = pstats.current.hours or 0
-    local graceHours = charHours <
-                           (SandboxVars.PhunRunners.GraceHours and SandboxVars.PhunRunners.GraceHours - charHours or 0)
-    local graceTotalHours = hours <
-                                (SandboxVars.PhunRunners.GraceTotalHours and SandboxVars.PhunRunners.GraceTotalHours -
-                                    hours or 0)
+    local inGrace = (charHours < (SandboxVars.PhunRunners.GraceHours or 1)) or
+                        (hours < (SandboxVars.PhunRunners.GraceTotalHours or 24))
+
     local sprinterKillRisk = 0
     local timerRisk = 0
-    local zoneRisk = 0
+
+    local zoneRisk = modifiers and modifiers.difficulty and modifiers.difficulty[zoneDifficulty] or 0
     local moonPhaseModifierValue = 100
     local lightModifier = 0
 
@@ -306,38 +310,41 @@ function PhunRunners:updatePlayer(playerObj)
         end
     end
 
-    zoneDifficulty = modifiers and zoneDifficulty and zoneDifficulty > 0 and modifiers.difficulty and
-                         modifiers.difficulty[zoneDifficulty] or 0
+    -- zoneDifficulty = modifiers and zoneDifficulty and zoneDifficulty > 0 and modifiers.difficulty and
+    --                      modifiers.difficulty[zoneDifficulty] or 0
     moonPhaseModifierValue = (modifiers and env and env.mooon and env.moon and modifiers.moon[env.moon] or 100) * .01
     local totalRisk = math.min(100, (zoneRisk + timerRisk + sprinterKillRisk) * moonPhaseModifierValue)
 
-    if env.value < 30 then
+    if env.value > SandboxVars.PhunRunners.SlowInLightLevel then
+        -- too bright for sprinters (green)
         lightModifier = 0
-    elseif env.value > 50 then
+    elseif env.value < SandboxVars.PhunRunners.DarknessLevel then
+        -- dark enough for sprinters (red)
         lightModifier = 100
     else
-        lightModifier = ((env.value - 30) / (50 - 30)) * 100
+        -- somewhere in between (yellow)
+        lightModifier = ((SandboxVars.PhunRunners.SlowInLightLevel - SandboxVars.PhunRunners.DarknessLevel) /
+                            (env.value - SandboxVars.PhunRunners.DarknessLevel)) * 100
     end
 
-    local grace = math.max(graceHours or 0, graceTotalHours or 0)
-
+    local graceHours = math.max(0, math.max((SandboxVars.PhunRunners.GraceHours or 1) - charHours,
+        (SandboxVars.PhunRunners.GraceTotalHours or 24) - hours))
     local pd = {
         zone = zone,
         risk = totalRisk,
         modifier = lightModifier,
-        env = env.value,
-        spawnSprinters = lightModifier > 0 and grace == 0 and totalRisk > 0,
+        env = env,
+        spawnSprinters = lightModifier > 0 and graceHours == 0 and totalRisk > 0,
         restless = env.value > 30,
         difficulty = zoneDifficulty,
         zoneRisk = zoneRisk,
         timerRisk = timerRisk,
         sprinterKillRisk = sprinterKillRisk,
         moonMultiplier = moonPhaseModifierValue,
-        grace = grace
+        grace = graceHours
     }
 
-    if zoneDifficulty == 0 or charHours <= SandboxVars.PhunRunners.GraceHours or hours <=
-        SandboxVars.PhunRunners.GraceTotalHours then
+    if zoneDifficulty == 0 or inGrace then
         pd.risk = 0
         pd.restless = false
         pd.spawnSprinters = false
@@ -358,6 +365,10 @@ function PhunRunners:updatePlayer(playerObj)
     end
 
     self.players[name] = pd
+
+    if self.updateMoodle then
+        self:updateMoodle(playerObj)
+    end
 
 end
 
@@ -397,6 +408,7 @@ function PhunRunners:getSummary(playerObj)
 
     local risk = PhunRunners:getPlayerData(playerObj)
     local riskDesc = {}
+    local riskModifiers = {}
 
     local grace = math.floor(risk.grace or 0)
 
@@ -416,12 +428,9 @@ function PhunRunners:getSummary(playerObj)
 
     table.insert(riskDesc, getText("IGUI_PhunRunners_RiskLevel", math.floor(risk.risk + 0.5)))
 
-    local riskd1 = table.concat(riskDesc, "\n")
-
-    riskDesc = {}
-
     if risk.modifier and risk.modifier > 0 and risk.modifier < 100 then
-        table.insert(riskDesc, getText("IGUI_PhunRunners_Modifier.darkness", tostring(math.floor(risk.modifier + 0.5))))
+        table.insert(riskModifiers,
+            getText("IGUI_PhunRunners_Modifier.darkness", tostring(math.floor(risk.modifier + 0.5))))
     end
 
     if PhunRunners.env and PhunRunners.env.moon and risk.moonMultiplier then
@@ -437,6 +446,13 @@ function PhunRunners:getSummary(playerObj)
         end
     end
 
+    if #riskModifiers > 0 then
+        table.insert(riskDesc, getText("IGUI_PhunRunners_Modifiers"))
+        for _, v in ipairs(riskModifiers) do
+            table.insert(riskDesc, " " .. v)
+        end
+    end
+
     if risk.modifier and risk.modifier > 0 then
         table.insert(riskDesc, "\n")
         if risk.modifier >= 100 then
@@ -448,17 +464,13 @@ function PhunRunners:getSummary(playerObj)
         table.insert(riskDesc, "\n" .. getText("IGUI_PhunRunners_ZedsAreSettling"))
     end
 
-    if #riskDesc > 0 then
-        riskd1 = riskd1 .. "\n" .. getText("IGUI_PhunRunners_Modifiers") .. ":\n " .. table.concat(riskDesc, "\n ")
-    end
-
     local results = {
         risk = risk.risk,
         spawnSprinters = risk.spawnSprinters == true,
         restless = risk.restless == true,
         title = risk.zone and risk.zone.title or "Wilderness",
         subtitle = risk.zone and risk.zone.subtitle or nil,
-        description = riskd1
+        description = table.concat(riskDesc, "\n")
 
     }
 

@@ -25,7 +25,6 @@ Sandbox_EN = {
     Sandbox_MoonModifier = "Moon phase modifier"
     Sandbox_MoonModifier_tooltip = "Semi-Colon delimited value of percentages that corresponds with the 9 phases of the moon (New Moon, Crecent Moon, First Quarter, Gibbous Moon, Full Moon, Gibbous Moon, Last Quarter and Waning Crescent). a value of 50;80;90;100;200;100;90;80 would mean that the New Moon would reduce the risk level by 50% while a Full Moon would double the risk"
 
-
     Sandbox_GraceTotalHours = "Grace across all characters"
     Sandbox_GraceTotalHours_tooltip = "Total amount of hours before spawning sprinters (regardless of how many characters the user has created)"
 

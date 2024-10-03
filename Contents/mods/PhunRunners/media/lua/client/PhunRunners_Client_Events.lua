@@ -51,11 +51,16 @@ Events.OnTick.Add(setup)
 Events.EveryOneMinute.Add(function()
     PhunRunners:updateEnvironment()
     PhunRunners:updatePlayers()
-    PhunRunners:recalcOutfits()
 end)
 
 Events.OnDawn.Add(function()
+    PhunRunners:updateEnvironment()
+    PhunRunners:updatePlayers()
     PhunRunners:recalcOutfits()
+end)
+
+Events.OnDusk.Add(function()
+    PhunRunners:updateEnvironment()
 end)
 
 Events.OnZombieUpdate.Add(function(zed)
@@ -137,3 +142,25 @@ Events.OnCharacterDeath.Add(function(playerObj)
     end
 
 end)
+
+local MF = MF;
+if MF then
+    Events[PhunRunners.events.OnPlayerStartSpawningSprinters].Add(function(playerObj)
+        MF.getMoodle(PhunRunners.name, playerObj:getPlayerNum()):activate()
+    end)
+
+    Events[PhunRunners.events.OnPlayerStopSpawningSprinters].Add(function(playerObj)
+        MF.getMoodle(PhunRunners.name, playerObj:getPlayerNum()):activate()
+    end)
+
+    Events[PhunRunners.events.OnPlayerRiskUpdate].Add(function(playerObj, data)
+        if PhunRunners.updateMoodle then
+            PhunRunners:updateMoodle(playerObj)
+        end
+        if data.spawnSprinters then
+            MF.getMoodle(PhunRunners.name, playerObj:getPlayerNum()):activate()
+        else
+            MF.getMoodle(PhunRunners.name, playerObj:getPlayerNum()):activate()
+        end
+    end)
+end

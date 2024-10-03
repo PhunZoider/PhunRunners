@@ -1,5 +1,13 @@
 VERSION = 1,
 
+option PhunRunners.ShowMoodle
+{ 
+    type = boolean, 
+    default = true,
+    page=PhunRunners,
+    translation = PhunRunnersShowMoodle
+}
+
 option PhunRunners.PhunRunnersVolume
 { 
     type = integer, 
@@ -36,6 +44,16 @@ option PhunRunners.SlowInLightLevel
     max = 100,
     page=PhunRunners,
     translation = PhunRunnersSlowInLightLevel
+}
+
+option PhunRunners.DarknessLevel
+{ 
+    type = integer, 
+    default = 50, 
+    min = 0,
+    max = 100,
+    page=PhunRunners,
+    translation = PhunRunnersDarknessLevel
 }
 
 option PhunRunners.TotalHoursModifier

@@ -89,7 +89,7 @@ else
     end
     local pCache = {}
 
-    Events.OnPlayerMove.Add(function(playerObj)
+    Events.OnPlayerUpdate.Add(function(playerObj)
 
         if playerObj:isLocalPlayer() then
             local name = playerObj:getUsername()
@@ -110,7 +110,7 @@ else
                 for _, z in ipairs(defaultZones) do
                     if x > z.x and x < z.x2 and y > z.y and y < z.y2 then
                         if playerObj:getModData().PhunRunnersZone ~= z.title then
-                            playerObj:getModData().PhunRunnersZone = z.title
+                            playerObj:getModData().PhunRunnersZone = z
                             PhunRunners:updatePlayer(playerObj)
                         end
                         break
