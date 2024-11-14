@@ -264,7 +264,7 @@ function PhunRunners:updatePlayer(playerObj)
         difficulty = 0
     }
 
-    local pstats = phunStats and phunStats:getPlayerData(name) or {
+    local pstats = phunStats and phunStats:getData(name) or {
         current = {
             hours = playerObj:getHoursSurvived(),
             kills = pData.kills or 0,

@@ -21,7 +21,7 @@ function PhunRunners:getZedData(zed)
     end
 
     local id = self:getId(zed)
-    local reg = self.registry[id]
+    local reg = self.registry and self.registry[id]
 
     if data.PhunRunners == nil or data.PhunRunners.id ~= id or (data.PhunRunners.sprinter and reg == nil) then
         -- zed is not registered or it is being reused

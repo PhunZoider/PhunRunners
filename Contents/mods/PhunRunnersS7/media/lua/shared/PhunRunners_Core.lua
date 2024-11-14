@@ -174,7 +174,7 @@ for _, event in pairs(PhunRunners.events) do
 end
 
 function PhunRunners:registerSprinter(zid, skipNotify)
-    if zid and not self.registry[zid] then
+    if zid and self.registry and not self.registry[zid] then
         self.registry[zid] = getGameTime():getWorldAgeHours()
 
         if isClient() and not skipNotify then

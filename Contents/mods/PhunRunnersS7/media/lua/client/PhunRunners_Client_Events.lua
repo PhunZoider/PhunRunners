@@ -25,7 +25,7 @@ if PhunZones then
 end
 
 if PhunStats then
-    Events[PhunStats.events.OnPhunStatsClientReady].Add(function()
+    Events[PhunStats.events.OnReady].Add(function()
 
         if not iniedPhunStats then
             iniedPhunStats = true
@@ -73,7 +73,6 @@ end)
 
 Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
     if tableName == PhunRunners.name and type(tableData) == "table" then
-        PhunRunners:printTable(tableData)
         ModData.add(PhunRunners.name, tableData)
         PhunRunners.registry = ModData.getOrCreate(PhunRunners.name)
     end
