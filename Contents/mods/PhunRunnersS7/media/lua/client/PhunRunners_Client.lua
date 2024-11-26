@@ -270,7 +270,7 @@ function PhunRunners:updatePlayer(playerObj)
             kills = pData.kills or 0,
             sprinterKills = pData.sprinterKills or 0
         },
-        total = {
+        totals = {
             hours = playerObj:getHoursSurvived() + (pData.hours or 0),
             kills = pData.totalKills or 0,
             sprinterKills = pData.totalKills or 0
@@ -278,13 +278,16 @@ function PhunRunners:updatePlayer(playerObj)
     }
 
     local zoneDifficulty = zone.difficulty or 1
-    local hours = pstats.total.hours or 0
+    local charHours = pstats.current.hours or 0
+    local hours = (pstats.total.hours or 0) + charHours
     local totalKills = pstats.total.kills or 0
     local totalSprinters = pstats.total.sprinters or 0
-    local charHours = pstats.current.hours or 0
-    local inGrace = (charHours < (SandboxVars.PhunRunners.GraceHours or 1)) or
-                        (hours < (SandboxVars.PhunRunners.GraceTotalHours or 24))
 
+    local gHours = SandboxVars.PhunRunners.GraceHours or 1
+    local gTotalHours = SandboxVars.PhunRunners.GraceTotalHours or 24
+    local inGrace = charHours < gHours or hours < gTotalHours
+    -- print("Player ", name, " is in grace: ", inGrace, " charHours: ", charHours, " hours: ", hours, " gHours: ", gHours,
+    --     " gTotalHours: ", gTotalHours)
     local sprinterKillRisk = 0
     local timerRisk = 0
 
@@ -314,21 +317,20 @@ function PhunRunners:updatePlayer(playerObj)
     --                      modifiers.difficulty[zoneDifficulty] or 0
     moonPhaseModifierValue = (modifiers and env and env.mooon and env.moon and modifiers.moon[env.moon] or 100) * .01
     local totalRisk = math.min(100, (zoneRisk + timerRisk + sprinterKillRisk) * moonPhaseModifierValue)
+    local sb = SandboxVars.PhunRunners or {}
 
-    if env.value > SandboxVars.PhunRunners.SlowInLightLevel then
+    if env.value > sb.SlowInLightLevel then
         -- too bright for sprinters (green)
         lightModifier = 0
-    elseif env.value < SandboxVars.PhunRunners.DarknessLevel then
+    elseif env.value < sb.DarknessLevel then
         -- dark enough for sprinters (red)
         lightModifier = 100
     else
         -- somewhere in between (yellow)
-        lightModifier = ((SandboxVars.PhunRunners.SlowInLightLevel - SandboxVars.PhunRunners.DarknessLevel) /
-                            (env.value - SandboxVars.PhunRunners.DarknessLevel)) * 100
+        lightModifier = ((sb.SlowInLightLevel - sb.DarknessLevel) / (env.value - sb.DarknessLevel)) * 100
     end
 
-    local graceHours = math.max(0, math.max((SandboxVars.PhunRunners.GraceHours or 1) - charHours,
-        (SandboxVars.PhunRunners.GraceTotalHours or 24) - hours))
+    local graceHours = math.max(0, math.max((gHours or 1) - charHours, (gTotalHours or 24) - hours))
     local pd = {
         zone = zone,
         risk = totalRisk,

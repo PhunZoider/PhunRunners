@@ -150,6 +150,9 @@ function PhunRunners:shouldSprint(zed, zData, playerData)
         local risk = playerData.risk
         if playerData.modifier ~= 0 then
             -- adjust for modifier
+            if playerData.modifier > 100 then
+                playerData.modifier = 100
+            end
             risk = risk * ((playerData.modifier or 0) * 0.01)
         end
 
