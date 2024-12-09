@@ -10,7 +10,13 @@ Commands[PhunRunners.commands.registerSprinter] = function(arguments)
 end
 
 Commands[PhunRunners.commands.unregisterSprinter] = function(arguments)
-    PhunRunners:unregisterSprinter(arguments.id, true)
+    if arguments.id then
+        PhunRunners:unregisterSprinter(arguments.id, true)
+    elseif arguments.ids then
+        for _, id in ipairs(arguments.ids) do
+            PhunRunners:unregisterSprinter(id, true)
+        end
+    end
 end
 
 Events.OnServerCommand.Add(function(module, command, arguments)

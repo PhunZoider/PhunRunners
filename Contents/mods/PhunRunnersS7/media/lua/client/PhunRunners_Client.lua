@@ -315,7 +315,11 @@ function PhunRunners:updatePlayer(playerObj)
 
     -- zoneDifficulty = modifiers and zoneDifficulty and zoneDifficulty > 0 and modifiers.difficulty and
     --                      modifiers.difficulty[zoneDifficulty] or 0
-    moonPhaseModifierValue = (modifiers and env and env.mooon and env.moon and modifiers.moon[env.moon] or 100) * .01
+    local mods = modifiers
+    local m = env.moon
+    moonPhaseModifierValue = (mods and mods.moon and mods.moon[m] or 100) * .01
+    -- print("Moon phase: ", m, " modifier: ", moonPhaseModifierValue)
+    -- moonPhaseModifierValue = (modifiers and env and env.mooon and env.moon and modifiers.moon[env.moon] or 100) * .01
     local totalRisk = math.min(100, (zoneRisk + timerRisk + sprinterKillRisk) * moonPhaseModifierValue)
     local sb = SandboxVars.PhunRunners or {}
 

@@ -164,7 +164,12 @@ PhunRunners = {
         }
 
     },
-    outfit = nil
+    outfit = nil,
+    registry = {},
+    toUnregister = {},
+    settings = {
+        deferUnregistereSeconds = 240
+    }
 }
 
 for _, event in pairs(PhunRunners.events) do
@@ -192,19 +197,29 @@ function PhunRunners:registerSprinter(zid, skipNotify)
     end
 end
 
+local doUnregisterInBatches = nil
+
 function PhunRunners:unregisterSprinter(zid, skipNotify)
-    if zid and self.registry[zid] then
+    if zid and self.registry and self.registry[zid] then
         self.registry[zid] = nil
+        -- print("unregisterSprinter ", zid)
         if isClient() and not skipNotify then
             -- tell server (and all other players) to forget about this sprinter
             sendClientCommand(getPlayer(), self.name, self.commands.unregisterSprinter, {
                 id = zid
             })
         elseif isServer() and not skipNotify then
-            -- tell others to forget about this sprinter
-            sendServerCommand(self.name, self.commands.unregisterSprinter, {
-                id = zid
-            })
+            if doUnregisterInBatches == nil then
+                doUnregisterInBatches = SandboxVars.PhunRunners.UnregisterBatches
+            end
+            -- if doUnregisterInBatches then
+            --     table.insert(self.toUnregister, zid)
+            -- else
+            --     -- tell others to forget about this sprinter
+            --     sendServerCommand(self.name, self.commands.unregisterSprinter, {
+            --         id = zid
+            --     })
+            -- end
         end
     end
 end
@@ -214,6 +229,10 @@ function PhunRunners:init()
         self.inied = true
         ModData.add(self.name, {})
         self.registry = ModData.getOrCreate(self.name)
+        if isServer() then
+            self.settings.deferSeconds = SandboxVars.PhunRunners.DeferUnregisterSeconds or 240
+
+        end
     end
 end
 

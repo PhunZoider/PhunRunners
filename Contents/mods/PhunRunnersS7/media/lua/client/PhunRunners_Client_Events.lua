@@ -103,7 +103,7 @@ Events.OnCharacterDeath.Add(function(playerObj)
         data = data and data.PhunRunners or {}
 
         local player = playerObj:getAttackedBy()
-        if not player:isLocalPlayer() then
+        if not player or not player:isLocalPlayer() then
             return
         end
         local pdata = player:getModData()

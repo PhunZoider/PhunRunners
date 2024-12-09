@@ -1,7 +1,7 @@
 if not isServer() then
     return
 end
-
+local Delay = require "PhunRunners_Delay"
 local PhunRunners = PhunRunners
 
 Events.EveryHours.Add(function()
@@ -43,3 +43,25 @@ else
         end
     end)
 end
+
+function PhunRunners:serverSendUnregisters()
+    local seconds = PhunRunners.settings.deferUnregistereSeconds
+    if seconds and seconds > 0 then
+        Delay:set(seconds, function()
+            if #PhunRunners.toUnregister > 0 then
+                -- PhunTools:printTable(PhunRunners.toUnregister)
+                sendServerCommand(self.name, self.commands.unregisterSprinter, {
+                    ids = PhunRunners.toUnregister
+                })
+            end
+            PhunRunners:serverSendUnregisters()
+        end, "transmitUnregisters")
+    end
+end
+
+local function setup()
+    Events.OnTick.Remove(setup)
+    -- PhunRunners:serverSendUnregisters()
+end
+
+Events.OnTick.Add(setup)
