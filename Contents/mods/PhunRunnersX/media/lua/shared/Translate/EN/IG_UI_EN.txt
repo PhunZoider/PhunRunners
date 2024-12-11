@@ -1,0 +1,24 @@
+IGUI_EN = {
+    IGUI_PhunRunners_RiskLevel = "Risk level: %1%",
+    IGUI_PhunRunners_IgnoringYouForAnotherXHours = "Rabid zombies are ignoring you for %1 hours",
+    IGUI_PhunRunners_IgnoringYouForAnotherXHour = "Rabid zombies are ignoring you for an hour",
+    IGUI_PhunRunners_RiskFromMoon = "%1% from %2"
+    IGUI_PhunRunners_ZedsAreRestless = "Zombies are restless"
+    IGUI_PhunRunners_ZedsAreSettling = "Zombies are settled"
+    IGUI_PhunRunners_ZedsAreRabid = "Zombies are rabid"
+    IGUI_PhunRunners_AreaRisk.min = "Area is minimal risk"
+    IGUI_PhunRunners_AreaRisk.low = "Area is low risk"
+    IGUI_PhunRunners_AreaRisk.moderate = "Area is moderate risk"
+    IGUI_PhunRunners_AreaRisk.high = "Area is high risk"
+    IGUI_PhunRunners_AreaRisk.extreme = "Area is extreme risk"
+    IGUI_PhunRunners_Modifier.darkness = "Darkness: -%1%"
+    IGUI_PhunRunners_Modifiers = "Modifiers"
+    IGUI_PhunRunners_MoonPhase1 = "New Moon"
+    IGUI_PhunRunners_MoonPhase2 = "Crescent Moon"
+    IGUI_PhunRunners_MoonPhase3 = "First Quarter"
+    IGUI_PhunRunners_MoonPhase4 = "Gibbous Moon"
+    IGUI_PhunRunners_MoonPhase5 = "Full Moon"
+    IGUI_PhunRunners_MoonPhase6 = "Gibbous Moon"
+    IGUI_PhunRunners_MoonPhase7 = "Last Quarter"
+    IGUI_PhunRunners_MoonPhase8 = "Waning Crescent"
+}

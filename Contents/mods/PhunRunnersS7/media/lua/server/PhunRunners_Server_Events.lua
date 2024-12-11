@@ -5,7 +5,7 @@ local Delay = require "PhunRunners_Delay"
 local PhunRunners = PhunRunners
 
 Events.EveryHours.Add(function()
-    PhunRunners:clean()
+    -- PhunRunners:clean()
 end)
 
 Events.OnZombieDead.Add(function(zed)
