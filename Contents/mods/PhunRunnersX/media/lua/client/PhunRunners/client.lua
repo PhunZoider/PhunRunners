@@ -188,6 +188,29 @@ function PR:printTable(t)
     end
 end
 
+function PR:showWidgets()
+    for i = 0, getOnlinePlayers():size() - 1 do
+        local p = getOnlinePlayers():get(i)
+        if p:isLocalPlayer() then
+            self:showWidget(p)
+        end
+    end
+end
+
+function PR:showWidget(playerObj)
+    self.ui.widget.OnOpenPanel(playerObj)
+end
+
+function PR:reloadWidget(playerObj)
+    local w = self.ui.widget.instances[playerObj:getPlayerNum()]
+    if w then
+        w:close()
+        w:removeFromUIManager()
+        self.ui.widget.instances[playerObj:getPlayerNum()] = nil
+    end
+    self:showWidget(playerObj)
+end
+
 local modifiers = {
     inied = false,
     hours = nil,
@@ -219,9 +242,9 @@ function PR:updatePlayer(playerObj)
                 array = true
             }
         }
-        local sb = sandbox
+
         for k, v in pairs(modifierMap) do
-            local raw = sb[v.setting] or ""
+            local raw = sandbox[v.setting] or ""
             raw = luautils.split(raw, ";")
             if raw and #raw > 0 then
                 if v.array then
@@ -283,8 +306,8 @@ function PR:updatePlayer(playerObj)
     local totalKills = pstats.total.kills or 0
     local totalSprinters = pstats.total.sprinters or 0
 
-    local gHours = sandbox or 1
-    local gTotalHours = sandbox or 24
+    local gHours = sandbox.GraceHours or 1
+    local gTotalHours = sandbox.GraceTotalHours or 24
     local inGrace = charHours < gHours or hours < gTotalHours
     -- print("Player ", name, " is in grace: ", inGrace, " charHours: ", charHours, " hours: ", hours, " gHours: ", gHours,
     --     " gTotalHours: ", gTotalHours)
@@ -321,17 +344,16 @@ function PR:updatePlayer(playerObj)
     -- print("Moon phase: ", m, " modifier: ", moonPhaseModifierValue)
     -- moonPhaseModifierValue = (modifiers and env and env.mooon and env.moon and modifiers.moon[env.moon] or 100) * .01
     local totalRisk = math.min(100, (zoneRisk + timerRisk + sprinterKillRisk) * moonPhaseModifierValue)
-    local sb = sandbox
 
-    if env.value > sb.SlowInLightLevel then
+    if env.value > sandbox.SlowInLightLevel then
         -- too bright for sprinters (green)
         lightModifier = 0
-    elseif env.value < sb.DarknessLevel then
+    elseif env.value < sandbox.DarknessLevel then
         -- dark enough for sprinters (red)
         lightModifier = 100
     else
         -- somewhere in between (yellow)
-        lightModifier = ((sb.SlowInLightLevel - sb.DarknessLevel) / (env.value - sb.DarknessLevel)) * 100
+        lightModifier = ((sandbox.SlowInLightLevel - sandbox.DarknessLevel) / (env.value - sandbox.DarknessLevel)) * 100
     end
 
     local graceHours = math.max(0, math.max((gHours or 1) - charHours, (gTotalHours or 24) - hours))
@@ -371,10 +393,6 @@ function PR:updatePlayer(playerObj)
     end
 
     self.players[name] = pd
-
-    if self.updateMoodle then
-        self:updateMoodle(playerObj)
-    end
 
 end
 

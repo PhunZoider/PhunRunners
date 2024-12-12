@@ -41,11 +41,12 @@ end
 
 local function setup()
     Events.OnTick.Remove(setup)
-    PR:init()
+    PR:ini()
     ModData.request(PR.name)
     PR:updateEnvironment()
     PR:updatePlayers()
     PR:recalcOutfits()
+    PR:showWidgets()
 end
 Events.OnTick.Add(setup)
 

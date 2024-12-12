@@ -113,7 +113,9 @@ function PR:testPlayers(zed, zData)
     for i = 0, getOnlinePlayers():size() - 1 do
         local p = getOnlinePlayers():get(i)
         if p:isLocalPlayer() then
-
+            local isVis = zed:getNumSurvivorsInVicinity()
+            local list = zed.authOwnerPlayer
+            print("Zed is visible to player: " .. tostring(list))
             local distance = getDistance(zed:getX(), zed:getY(), p:getX(), p:getY())
             if distance < 50 then
 

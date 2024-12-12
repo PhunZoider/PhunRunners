@@ -215,3 +215,21 @@ function Core:getId(zedObj)
     end
 end
 
+function Core:registerSprinter(zid, skipNotify)
+    if not self.data[zid] then
+        self.data[zid] = 1
+        if isClient() and not skipNotify then
+            local p = getPlayer()
+            -- tell server (and all other players) about this sprinter
+            sendClientCommand(p, self.name, self.commands.registerSprinter, {
+                id = zid
+            })
+        elseif isServer() then
+            -- tell others about this sprinter
+            sendServerCommand(self.name, self.commands.registerSprinter, {
+                id = zid
+            })
+        end
+    end
+end
+

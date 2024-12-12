@@ -11,7 +11,7 @@ local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_SCALE = FONT_HGT_SMALL / 14
 local HEADER_HGT = FONT_HGT_MEDIUM + 2 * 2
 
-local profileName = "PhunRunnersWidget"
+local profileName = "PhunRunnersWidgets"
 PR.ui.widget = ISPanel:derive(profileName);
 PR.ui.widget.instances = {}
 local UI = PR.ui.widget
@@ -23,7 +23,7 @@ function UI.OnOpenPanel(playerObj, playerIndex)
     if not UI.instances[playerIndex] then
         local core = getCore()
         local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 14
-        local width = 200 * FONT_SCALE
+        local width = 50 * FONT_SCALE
         local height = 20 * FONT_SCALE
 
         local x = (core:getScreenWidth() - width) / 2
@@ -31,7 +31,7 @@ function UI.OnOpenPanel(playerObj, playerIndex)
 
         UI.instances[playerIndex] = UI:new(x, y, width, height, playerObj, playerIndex);
         UI.instances[playerIndex]:initialise();
-        ISLayoutManager.RegisterWindow(profielName, PR.ui.widget, PR.ui.widget.instances[playerIndex])
+        -- ISLayoutManager.RegisterWindow(profileName, PR.ui.widget, PR.ui.widget.instances[playerIndex])
     end
 
     UI.instances[playerIndex]:addToUIManager();
@@ -95,7 +95,7 @@ function UI:new(x, y, width, height, player, playerIndex)
         b = 1,
         a = .9
     }
-    o.data = {}
+    o.data = PR:getPlayerData(player)
 
     o.moveWithMouse = true;
     o.anchorRight = true
@@ -113,7 +113,7 @@ end
 function UI:RestoreLayout(name, layout)
 
     ISLayoutManager.DefaultRestoreWindow(self, layout)
-    if name == profielName then
+    if name == profileName then
         ISLayoutManager.DefaultRestoreWindow(self, layout)
         self.userPosition = layout.userPosition == 'true'
     end
@@ -139,7 +139,7 @@ function UI:createChildren()
     ISPanel.createChildren(self);
 end
 
-local calculatPips = function(risk)
+local calculatePips = function(risk)
     -- Ensure the risk is within the valid range
     if risk < 0 then
         risk = 0
@@ -154,43 +154,47 @@ local calculatPips = function(risk)
     return pips
 end
 
-function UI:setData(data)
+function UI:onMouseUp(x, y)
+    ISPanel.onMouseUp(self, x, y)
+    if not self.dragging then
+        self:onClick()
+    end
+end
 
-    if data.zone then
-
-        if data.zone.title then
-            self.data.title = data.zone.title
-            self.data.titleWidth = getTextManager():MeasureStringX(UIFont.Medium, data.zone.title) + 20
-            if self.data.titleWidth > self.width then
-                self.data.titleWidth.width = self.width
-            end
-            self.data.titleHeight = FONT_HGT_MEDIUM
-        else
-            self.data.title = nil
-            self.data.titleWidth = 0
-            self.data.titleHeight = 0
-        end
-
-        if data.zone.subtitle then
-            self.data.subtitle = data.zone.subtitle
-            self.data.subtitleWidth = getTextManager():MeasureStringX(UIFont.Small, data.zone.subtitle) + 20
-            if self.data.subtitleWidth > self.width then
-                self.data.subtitleWidth = self.width
-            end
-            self.data.subtitleHeight = FONT_HGT_SMALL
-        else
-            self.data.subtitle = nil
-            self.data.subtitleWidth = 0
-            self.data.subtitleHeight = 0
-        end
-
-        if data.zone.pvp then
-            self.pvpTexture = getTexture("media/ui/pvpicon_on.png")
-        else
-            self.pvpTexture = nil
-        end
+function UI:onMouseMove(dx, dy)
+    ISPanel.onMouseMove(self, dx, dy)
+    if self:isMouseOver() then
+        self:doTooltip()
     end
 
+end
+
+function UI:doTooltip()
+    local x = self:getMouseX() + 20;
+    local y = self:getMouseY() + 20;
+    local rectWidth = 10;
+    if getCore():getScreenWidth() < x + 200 then
+        x = self:getMouseX() - 200;
+    end
+    if getCore():getScreenHeight() < y + 200 then
+        y = self:getMouseY() - 200;
+    end
+
+    local titleHeight = FONT_HGT_MEDIUM;
+
+    local heightPadding = 2
+    local rectHeight = titleHeight + (heightPadding * 3);
+
+    print("x: " .. x .. " y: " .. y .. " rectWidth: " .. rectWidth .. " rectHeight: " .. rectHeight)
+
+    self:drawRect(x, y, rectWidth + 0, rectHeight, 1.0, 0.0, 0.0, 0.0);
+    self:drawRectBorder(x, y, rectWidth + 0, rectHeight, 0.7, 0.4, 0.4, 0.4);
+    self:drawText("Hello", x + 2, y + 2, 1, 1, 1, 1);
+
+end
+
+function UI:onClick()
+    PR:reloadWidget(self.player)
 end
 
 function UI:prerender()
@@ -201,57 +205,49 @@ function UI:prerender()
 
     ISPanel.prerender(self);
 
-    local clock = UIManager.getClock()
-    if clock and clock:isDateVisible() then
-        -- print("clock is visible")
+    local snapPosition = "clock" -- "topright" "minimap" or none?
+
+    if snapPosition == "clock" then
+        local clock = UIManager.getClock()
+        if clock and clock:isVisible() then
+            local clockx = clock:getX()
+            local clocky = clock:getY()
+            self:setX(clockx)
+            self:setY(clocky + clock:getHeight() + 2)
+        else
+            self:setX(getCore():getScreenWidth() - self:getWidth() - 10)
+            self:setY(2)
+        end
+    elseif snapPosition == "topright" then
+        self:setX(getCore():getScreenWidth() - self:getWidth() - 10)
+        self:setY(10)
     end
+
     local x = 2
     local y = 2
     local txtColor = self.normalTextColor
 
-    -- if sandbox.PhunZones_Widget and PhunRunners then
-    --     local riskData = nil -- PhunZones:getRiskInfo(self.player, zone)
+    local colors = {
+        r = 0.4,
+        g = 0.4,
+        b = 0.4,
+        a = 1.0
+    }
 
-    --     if riskData then
-    --         local colors = {
-    --             r = 0.4,
-    --             g = 0.4,
-    --             b = 0.4,
-    --             a = 1.0
-    --         }
-    --         if riskData then
-    --             if riskData.modifier == nil then
-    --                 -- assert old version
-    --                 if riskData.restless == false or riskData.risk == 0 then
-    --                     colors.g = 0.9
-    --                 elseif riskData.risk <= 10 then
-    --                     colors.g = 0.9
-    --                     colors.r = 0.9
-    --                 else
-    --                     colors.r = 0.9
-    --                 end
-    --             else
-    --                 -- new version which includes modifier
-    --                 if riskData.modifier == 0 or riskData.risk == 0 then
-    --                     colors.g = 0.9
-    --                 elseif riskData.modifier and riskData.modifier < 90 then
-    --                     colors.g = 0.9
-    --                     colors.r = 0.9
-    --                 else
-    --                     colors.r = 0.9
-    --                 end
-    --             end
+    if self.data.risk <= 10 then
+        colors.g = 0.9
+        colors.r = 0.9
+    else
+        colors.r = 0.9
+    end
 
-    --             for i = 1, riskData.pips do
-    --                 self:drawRect(x + ((i - 1) * 7), y, 5, 5, colors.a, colors.r, colors.g, colors.b);
-    --             end
+    local pips = calculatePips(self.data.risk)
+    for i = 1, pips do
+        self:drawRect(x + ((i - 1) * 7), y, 5, 5, colors.a, colors.r, colors.g, colors.b);
+    end
 
-    --             if self:isMouseOver() then
-    --                 for i = riskData.pips + 1, 10 do
-    --                     self:drawRectBorder(x + ((i - 1) * 7), y, 5, 5, 0.7, 0.4, 0.4, 0.4);
-    --                 end
-    --             end
-    --         end
-    --     end
-    -- end
+    for i = pips + 1, 10 do
+        self:drawRectBorder(x + ((i - 1) * 7), y, 5, 5, 0.7, 0.4, 0.4, 0.4);
+    end
+
 end
