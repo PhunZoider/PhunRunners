@@ -11,17 +11,19 @@ local SPRINT = 1
 local NORMAL = 2
 local diffText = {"min", "low", "moderate", "high", "extreme"}
 
--- Player is eligible for sprinters to start, but indiviual settings may prevent it
+-- Trigger audio notification that sprinters will start running
 function PR:startSprintersSound(playerObj)
     local vol = (sandbox.PhunRunnersVolume or 15) * .01
     getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(vol);
 end
 
+-- Trigger audio notification that sprinters will stop running
 function PR:stopSprintersSound(playerObj)
     local vol = (sandbox.PhunRunnersVolume or 15) * .01
     getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(vol);
 end
 
+-- Make zed return to normal speed
 function PR:normalSpeed(zed)
     zed:makeInactive(true);
     sandboxOptions:set("ZombieLore.Speed", NORMAL)
@@ -29,6 +31,7 @@ function PR:normalSpeed(zed)
     zed:makeInactive(false);
 end
 
+-- Make zed run at sprint speed
 function PR:sprintSpeed(zed)
     zed:makeInactive(true);
     sandboxOptions:set("ZombieLore.Speed", SPRINT)
@@ -37,6 +40,7 @@ function PR:sprintSpeed(zed)
     sandboxOptions:set("ZombieLore.Speed", NORMAL)
 end
 
+-- configure any themed outfits
 function PR:recalcOutfits()
     local total = 0
     local month = getGameTime():getMonth()
@@ -95,6 +99,7 @@ function PR:updateZed(zed)
         return
     end
 
+
     if zData.sprinter == true and zData.dressed == nil and zed:isSkeleton() then
         -- cannot change to skeleton and dress in same update
         -- so we dress them after we convert to sprinter
@@ -110,7 +115,13 @@ function PR:updateZed(zed)
     zData.tick = 1
 
     if zData.sprinter ~= false then
-        self:testPlayers(zed, zData)
+        if not self:testPlayers(zed, zData) then
+            -- out of sight of all players?
+            -- TODO: use to reset zed?
+            -- well, this is just for local players - so maybe not useful?
+            -- Could maybe reset the scream?
+            return
+        end
     end
 
     -- is a sprinter, but not changed visual yet
@@ -126,34 +137,7 @@ function PR:updateZed(zed)
 
 end
 
-function PR:updateEnvironment()
-
-    if self.env == nil then
-        -- caches the current environment
-        self.env = self:getEnvironment(true)
-        return
-    end
-
-    local climate = getClimateManager()
-    local lightIntensity = climate:getDayLightStrength()
-    local fogIntensity = climate:getFogIntensity()
-
-    if self.env.light == lightIntensity and self.env.fog == fogIntensity then
-        -- no material change to env
-        return
-    end
-
-    -- caches the current environment
-    self.env = self:getEnvironment()
-    return self.env
-
-end
-
-function PR:getEnvironment(refresh)
-
-    if not refresh and self.env then
-        return self.env
-    end
+function PR:caclculateEnv()
 
     local climate = getClimateManager()
 
@@ -163,29 +147,31 @@ function PR:getEnvironment(refresh)
     local fogIntensity = math.floor((climate:getFogIntensity() * 100) + 0.5)
 
     -- adjust daylight intensity by fog intensity
-    local adjustedLightIntensity = lightIntensity; --  math.max(0, lightIntensity - (lightIntensity * (fogIntensity * 0.01)))
+    local adjustedLightIntensity = lightIntensity;
     if fogIntensity > 0 then
+        -- TODO: Why recalc this?
         adjustedLightIntensity = math.max(0, lightIntensity - (lightIntensity * climate:getFogIntensity()))
     end
 
-    -- get current moon phase
-    local moonPhase = getClimateMoon():getCurrentMoonPhase()
-
-    return {
+    self.env = {
         value = adjustedLightIntensity,
         light = lightIntensity,
         fog = fogIntensity,
         moon = getClimateMoon():getCurrentMoonPhase()
     }
 
+    return self.env
 end
 
-function PR:printTable(t)
-    if PhunTools then
-        PhunTools:printTable(t)
+-- Will return a cache of the env if refresh is not true
+function PR:getEnvironment(refresh)
+
+    if not refresh and self.env then
+        return self.env
     else
-        print("PhunRunners:printTable: ", t)
+        return self:caclculateEnv()
     end
+
 end
 
 function PR:showWidgets()
@@ -219,13 +205,24 @@ local modifiers = {
     moon = nil
 }
 
+function PR:resetModifiers()
+    modifiers.inied = false
+end
+
 local phunStats = nil
 
+-- update local db with players risk shit
 function PR:updatePlayer(playerObj)
+
+    if not playerObj or not playerObj:isLocalPlayer() then
+        return
+    end
 
     if not modifiers.inied then
         modifiers.inied = true
         modifiers.hours = nil
+
+        -- calculate modifiers from server settings
         local modifierMap = {
             ["hours"] = {
                 setting = "TotalHoursModifier"
@@ -263,22 +260,14 @@ function PR:updatePlayer(playerObj)
                 end
             end
         end
-
-        self:printTable(modifiers)
-    end
-
-    if not playerObj or not playerObj:isLocalPlayer() then
-        return
     end
 
     local name = playerObj:getUsername()
     local playerData = self:getPlayerData(name)
-    local env = self:getEnvironment(true)
+    local env = self:getEnvironment()
 
     if phunStats == nil then
         phunStats = PhunStats
-    else
-        phunStats = PhunStats or false
     end
 
     local pData = playerObj:getModData()
@@ -287,30 +276,17 @@ function PR:updatePlayer(playerObj)
         difficulty = 0
     }
 
-    local pstats = phunStats and phunStats:getData(name) or {
-        current = {
-            hours = playerObj:getHoursSurvived(),
-            kills = pData.kills or 0,
-            sprinterKills = pData.sprinterKills or 0
-        },
-        totals = {
-            hours = playerObj:getHoursSurvived() + (pData.hours or 0),
-            kills = pData.totalKills or 0,
-            sprinterKills = pData.totalKills or 0
-        }
-    }
+    local pstats = phunStats:getData(name)
 
     local zoneDifficulty = zone.difficulty or 1
     local charHours = pstats.current.hours or 0
     local hours = (pstats.total.hours or 0) + charHours
-    local totalKills = pstats.total.kills or 0
-    local totalSprinters = pstats.total.sprinters or 0
+    local totalKills = pstats.total.zombieKills or 0
+    local totalSprinters = pstats.total.sprinterKills or 0
 
     local gHours = sandbox.GraceHours or 1
     local gTotalHours = sandbox.GraceTotalHours or 24
     local inGrace = charHours < gHours or hours < gTotalHours
-    -- print("Player ", name, " is in grace: ", inGrace, " charHours: ", charHours, " hours: ", hours, " gHours: ", gHours,
-    --     " gTotalHours: ", gTotalHours)
     local sprinterKillRisk = 0
     local timerRisk = 0
 
@@ -336,13 +312,9 @@ function PR:updatePlayer(playerObj)
         end
     end
 
-    -- zoneDifficulty = modifiers and zoneDifficulty and zoneDifficulty > 0 and modifiers.difficulty and
-    --                      modifiers.difficulty[zoneDifficulty] or 0
     local mods = modifiers
     local m = env.moon
     moonPhaseModifierValue = (mods and mods.moon and mods.moon[m] or 100) * .01
-    -- print("Moon phase: ", m, " modifier: ", moonPhaseModifierValue)
-    -- moonPhaseModifierValue = (modifiers and env and env.mooon and env.moon and modifiers.moon[env.moon] or 100) * .01
     local totalRisk = math.min(100, (zoneRisk + timerRisk + sprinterKillRisk) * moonPhaseModifierValue)
 
     if env.value > sandbox.SlowInLightLevel then
@@ -353,6 +325,7 @@ function PR:updatePlayer(playerObj)
         lightModifier = 100
     else
         -- somewhere in between (yellow)
+        -- TODO: Alternatively, maybe just leave as warning. Don't need to particularly adjust speeds on this
         lightModifier = ((sandbox.SlowInLightLevel - sandbox.DarknessLevel) / (env.value - sandbox.DarknessLevel)) * 100
     end
 
@@ -363,7 +336,7 @@ function PR:updatePlayer(playerObj)
         modifier = lightModifier,
         env = env,
         spawnSprinters = lightModifier > 0 and graceHours == 0 and totalRisk > 0,
-        restless = env.value > 30,
+        restless = env.value > 30, -- ?
         difficulty = zoneDifficulty,
         zoneRisk = zoneRisk,
         timerRisk = timerRisk,
@@ -428,6 +401,7 @@ function PR:updatePlayers()
     end
 end
 
+-- return variables for tooltips to breakdown the risk profile
 function PR:getSummary(playerObj)
 
     local risk = PR:getPlayerData(playerObj)

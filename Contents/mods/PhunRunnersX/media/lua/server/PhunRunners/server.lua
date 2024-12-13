@@ -5,6 +5,7 @@ end
 local PR = PhunRunners
 local getOnlinePlayers = getOnlinePlayers
 
+-- hmm, I think we are trying to reset all zeds in playerless chunks?
 function PR:clean()
 
     local cells = {}
@@ -31,6 +32,9 @@ function PR:clean()
             end
         end
     end
+
+    -- TODO: Don't think this is doing what we think it is doing. 
+    -- Can we get zedids of those not in same cell as a player and reset that way?
 
     local changed = 0
     for k, v in pairs(self.data) do

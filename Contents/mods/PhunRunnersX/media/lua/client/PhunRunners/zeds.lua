@@ -110,15 +110,14 @@ end
 
 function PR:testPlayers(zed, zData)
 
+    local isVisible = false
+
     for i = 0, getOnlinePlayers():size() - 1 do
         local p = getOnlinePlayers():get(i)
         if p:isLocalPlayer() then
-            local isVis = zed:getNumSurvivorsInVicinity()
-            local list = zed.authOwnerPlayer
-            print("Zed is visible to player: " .. tostring(list))
             local distance = getDistance(zed:getX(), zed:getY(), p:getX(), p:getY())
             if distance < 50 then
-
+                isVisible = true
                 local pData = self:getPlayerData(p)
 
                 if zData.sprinter == nil then
@@ -132,9 +131,22 @@ function PR:testPlayers(zed, zData)
                         self:normalSpeed(zed)
                     end
                 end
+            elseif zData and self.resetIds[zData.id or "nope"] then
+                -- TODO: Undecorate
+                self.resetIds[zData.id] = nil
+                if zed:isSkeleton() then
+                    zed:setSkeleton(false)
+                end
+                if zData.sprinting then
+                    self:normalSpeed(zed)
+                end
+                zed:getModData().PhunRunenrs = nil
+                return false
             end
         end
     end
+
+    return isVisible
 
 end
 

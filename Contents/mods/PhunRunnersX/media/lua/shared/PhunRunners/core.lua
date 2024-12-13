@@ -1,3 +1,6 @@
+local Delay = require("PhunRunners/delay")
+local sandbox = SandboxVars.PhunRunners
+
 PhunRunners = {
     inied = false,
     name = "PhunRunners",
@@ -15,6 +18,10 @@ PhunRunners = {
         OnPlayerRiskUpdate = "OnPhunRunnersPlayerRiskUpdate",
         OnPlayerEnvUpdate = "OnPhunRunnersPlayerEnvUpdate"
     },
+    pendingRemovals = [
+
+    ],
+    resetIds = {},
     baseOutfits = {
         christmas = {
             male = {
@@ -231,5 +238,38 @@ function Core:registerSprinter(zid, skipNotify)
             })
         end
     end
+end
+
+function Core:unregisterSprinter(zid)
+    if zid and self.data[zid] then
+        self.data[zid] = nil
+        -- TODO: What if this guy is still running around? If we see he is a skele, do we just re set him up to sprint?
+        table.insert(self.pendingRemovals, zid)
+    end
+end
+
+function Core:processUnregister()
+
+    if #self.pendingRemovals > 0 then
+        if isClient() then
+            print("PhunRunenrs: Notify server of " .. #self.pendingRemovals .. " removal(s)")
+            sendClientCommand(getPlayer(), self.name, self.commands.unregisterSprinter, {
+                ids = self.pendingRemovals
+            })
+        elseif isServer()
+            print("PhunRunenrs: Notify clients of " .. #self.pendingRemovals .. " removal(s)")
+            sendServerCommand(self.name, self.commands.unregisterSprinter, {
+                ids = self.pendingRemovals
+            })
+        end
+        self.pendingRemovals = {}
+    end
+
+    -- reset delay
+    Delay:set(sandbox.DeferUnregistereSeconds or 30, function()
+        PhunRunners:processUnregister()
+    end, "processUnregister")
+    -- TODO: Maybe just do every dawn?
+
 end
 

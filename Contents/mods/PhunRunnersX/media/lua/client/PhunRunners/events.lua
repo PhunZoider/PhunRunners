@@ -13,7 +13,6 @@ if PhunZones then
         if not iniedPhunZones then
             iniedPhunZones = true
             if iniedPhunStats then
-                PR:updateEnvironment()
                 PR:updatePlayers()
                 PR:recalcOutfits()
             end
@@ -31,7 +30,6 @@ if PhunStats then
         if not iniedPhunStats then
             iniedPhunStats = true
             if iniedPhunZones then
-                PR:updateEnvironment()
                 PR:updatePlayers()
                 PR:recalcOutfits()
             end
@@ -43,7 +41,7 @@ local function setup()
     Events.OnTick.Remove(setup)
     PR:ini()
     ModData.request(PR.name)
-    PR:updateEnvironment()
+    PR:caclculateEnv()
     PR:updatePlayers()
     PR:recalcOutfits()
     PR:showWidgets()
@@ -51,18 +49,12 @@ end
 Events.OnTick.Add(setup)
 
 Events.EveryOneMinute.Add(function()
-    PR:updateEnvironment()
+    PR:caclculateEnv()
     PR:updatePlayers()
 end)
 
 Events.OnDawn.Add(function()
-    PR:updateEnvironment()
-    PR:updatePlayers()
     PR:recalcOutfits()
-end)
-
-Events.OnDusk.Add(function()
-    PR:updateEnvironment()
 end)
 
 Events.OnZombieUpdate.Add(function(zed)
