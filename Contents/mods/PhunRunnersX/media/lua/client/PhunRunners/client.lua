@@ -99,7 +99,6 @@ function PR:updateZed(zed)
         return
     end
 
-
     if zData.sprinter == true and zData.dressed == nil and zed:isSkeleton() then
         -- cannot change to skeleton and dress in same update
         -- so we dress them after we convert to sprinter
@@ -212,7 +211,7 @@ end
 local phunStats = nil
 
 -- update local db with players risk shit
-function PR:updatePlayer(playerObj)
+function PR:updatePlayer(playerObj, zone)
 
     if not playerObj or not playerObj:isLocalPlayer() then
         return
@@ -272,15 +271,14 @@ function PR:updatePlayer(playerObj)
 
     local pData = playerObj:getModData()
 
-    local zone = pData.PhunRunnersZone or {
-        difficulty = 0
-    }
-
+    if not zone then
+        zone = PhunZones:updateModData(playerObj, true)
+    end
     local pstats = phunStats:getData(name)
 
     local zoneDifficulty = zone.difficulty or 1
     local charHours = pstats.current.hours or 0
-    local hours = (pstats.total.hours or 0) + charHours
+    local hours = pstats.total.hours or 0
     local totalKills = pstats.total.zombieKills or 0
     local totalSprinters = pstats.total.sprinterKills or 0
 
@@ -305,7 +303,7 @@ function PR:updatePlayer(playerObj)
 
     if modifiers and modifiers.sprinters then
         for k, v in pairs(modifiers.sprinters) do
-            if hours > k then
+            if totalSprinters >= k then
                 sprinterKillRisk = v
                 break
             end
@@ -332,6 +330,10 @@ function PR:updatePlayer(playerObj)
     local graceHours = math.max(0, math.max((gHours or 1) - charHours, (gTotalHours or 24) - hours))
     local pd = {
         zone = zone,
+        hours = charHours,
+        totalHours = hours,
+        totalKills = totalKills,
+        totalSprinters = totalSprinters,
         risk = totalRisk,
         modifier = lightModifier,
         env = env,
@@ -366,6 +368,7 @@ function PR:updatePlayer(playerObj)
     end
 
     self.players[name] = pd
+    return pd
 
 end
 

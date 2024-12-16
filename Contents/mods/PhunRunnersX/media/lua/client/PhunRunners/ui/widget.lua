@@ -35,6 +35,7 @@ function UI.OnOpenPanel(playerObj, playerIndex)
     end
 
     UI.instances[playerIndex]:addToUIManager();
+    UI.instances[playerIndex].minimap = getPlayerMiniMap(playerIndex)
     UI.instances[playerIndex]:setVisible(true);
 
     return UI.instances[playerIndex];
@@ -102,6 +103,7 @@ function UI:new(x, y, width, height, player, playerIndex)
     o.anchorBottom = true
     o.player = player
     o.playerIndex = playerIndex
+    o.playerName = player:getUsername()
     o.zOffsetLargeFont = 25;
     o.zOffsetMediumFont = 20;
     o.zOffsetSmallFont = 6;
@@ -169,32 +171,63 @@ function UI:onMouseMove(dx, dy)
 
 end
 
+local phunStats = nil
+
 function UI:doTooltip()
     local x = self:getMouseX() + 20;
     local y = self:getMouseY() + 20;
-    local rectWidth = 10;
-    if getCore():getScreenWidth() < x + 200 then
-        x = self:getMouseX() - 200;
-    end
-    if getCore():getScreenHeight() < y + 200 then
-        y = self:getMouseY() - 200;
-    end
 
+    if phunStats == nil then
+        phunStats = PhunStats
+    end
+    self.data = PR:updatePlayer(self.player)
     local titleHeight = FONT_HGT_MEDIUM;
 
-    local heightPadding = 2
-    local rectHeight = titleHeight + (heightPadding * 3);
+    local texts = {}
+    table.insert(texts, "Risk: " .. tostring(self.data.risk) .. "%")
+    -- table.insert(texts, "Difficulty: " .. tostring(self.data.difficulty))
+    table.insert(texts, "Char Hours: " .. PhunTools:formatWholeNumber(self.data.hours or 0))
+    table.insert(texts, "Total Hours: " .. PhunTools:formatWholeNumber(self.data.totalHours or 0))
+    table.insert(texts, "Total Kills: " .. tostring(self.data.totalKills or 0))
+    table.insert(texts, "Sprinter Kills: " .. tostring(self.data.totalSprinters or 0))
+    table.insert(texts, "Grace: " .. tostring(self.data.grace))
+    table.insert(texts, "Modifier: " .. tostring(self.data.modifier) .. "%")
+    table.insert(texts, "Fog: " .. tostring(self.data.env.fog) .. "%")
+    table.insert(texts, "Light: " .. tostring(self.data.env.light) .. "%")
+    table.insert(texts, "Moon: " .. tostring(self.data.env.moon) .. "%")
+    table.insert(texts, "Moon Multiplier: " .. tostring(self.data.moonMultiplier) .. "%")
+    table.insert(texts, "Value: " .. tostring(self.data.env.value) .. "%")
+    table.insert(texts, "Restless: " .. tostring(self.data.restless))
+    table.insert(texts, "Spawn Sprinters: " .. tostring(self.data.spawnSprinters))
+    table.insert(texts, "Timer: " .. tostring(self.data.sprinterKillRisk) .. "%")
+    table.insert(texts, "Timer: " .. tostring(self.data.timerRisk) .. "%")
+    table.insert(texts, "ZoneRisk: " .. tostring(self.data.zoneRisk) .. "%")
+    -- table.insert(texts, "Zone Diff: " .. tostring(self.data.zone.diffifulty) .. "%")
 
-    print("x: " .. x .. " y: " .. y .. " rectWidth: " .. rectWidth .. " rectHeight: " .. rectHeight)
+    local text = table.concat(texts, "\n")
 
-    self:drawRect(x, y, rectWidth + 0, rectHeight, 1.0, 0.0, 0.0, 0.0);
-    self:drawRectBorder(x, y, rectWidth + 0, rectHeight, 0.7, 0.4, 0.4, 0.4);
-    self:drawText("Hello", x + 2, y + 2, 1, 1, 1, 1);
+    local textWidth = getTextManager():MeasureStringX(UIFont.Small, text)
+    local textHeight = getTextManager():MeasureStringY(UIFont.Small, text)
+
+    x = self:getMouseX() - textWidth - 20;
+    if x > getCore():getScreenWidth() then
+        x = self:getMouseX() - textWidth - 20;
+    end
+
+    self:drawRect(x, y, textWidth + 20, textHeight + 20, 1.0, 0.0, 0.0, 0.0);
+    self:drawRectBorder(x, y, textWidth + 20, textHeight + 20, 0.7, 0.4, 0.4, 0.4);
+    self:drawText(text, x + 10, y + 10, 1, 1, 1, 1);
 
 end
 
 function UI:onClick()
     PR:reloadWidget(self.player)
+end
+
+function UI:render()
+    if self:isMouseOver() then
+        self:doTooltip()
+    end
 end
 
 function UI:prerender()
@@ -217,6 +250,20 @@ function UI:prerender()
         else
             self:setX(getCore():getScreenWidth() - self:getWidth() - 10)
             self:setY(2)
+        end
+    elseif snapPosition == "ninimap" then
+
+        self:setX(self.minimap.x)
+        self:setY(self.minimap.y)
+        self:bringToTop()
+
+        self:setWidth(0)
+        self:setHeight(0)
+
+        local title = self.minimap.titleBar
+
+        if title:isVisible() then
+            return
         end
     elseif snapPosition == "topright" then
         self:setX(getCore():getScreenWidth() - self:getWidth() - 10)
