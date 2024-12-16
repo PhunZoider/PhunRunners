@@ -1,7 +1,7 @@
 if not isClient() then
     return
 end
-local Commands = require("commands")
+local Commands = require("PhuNRunners/client_commands")
 local PR = PhunRunners
 local getOnlinePlayers = getOnlinePlayers
 local iniedPhunStats = false

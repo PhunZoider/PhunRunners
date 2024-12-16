@@ -1,13 +1,9 @@
 if not isServer() then
     return
 end
-local Delay = require "delay"
-local Commands = require "commands"
+local Delay = require "PhunRunners/delay"
+local Commands = require "PhunRunners/server_commands"
 local PR = PhunRunners
-
-Events.OnServerStarted.Add(function()
-    PR:ini()
-end)
 
 Events.EveryHours.Add(function()
     -- PR:clean()
@@ -18,7 +14,7 @@ Events.OnZombieDead.Add(function(zed)
 end)
 
 Events.OnInitGlobalModData.Add(function()
-    PR:init()
+    PR:ini()
 end)
 
 PhunTools:RunOnceWhenServerEmpties(PR.name, function()

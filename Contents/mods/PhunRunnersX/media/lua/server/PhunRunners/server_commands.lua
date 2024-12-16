@@ -1,7 +1,6 @@
 if not isServer() then
     return
 end
-
 local PR = PhunRunners
 
 local Commands = {}

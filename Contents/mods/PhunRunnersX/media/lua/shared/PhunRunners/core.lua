@@ -5,12 +5,13 @@ PhunRunners = {
     inied = false,
     name = "PhunRunners",
     commands = {
-        createSprinter = "createSprinter",
-        registerSprinter = "registerSprinter",
-        unregisterSprinter = "unregisterSprinter"
+        createSprinter = "PhunRunnersCreateSprinter",
+        registerSprinter = "PhunRunnersRegisterSprinter",
+        unregisterSprinter = "PhunRunnersUnregisterSprinter"
     },
     ui = {},
     players = {},
+    data = {},
     events = {
         OnSprinterDeath = "OnPhunRunnersSprinterDeath",
         OnPlayerStartSpawningSprinters = "OnPhunRunnersPlayerStartSpawningSprinters",
@@ -18,9 +19,7 @@ PhunRunners = {
         OnPlayerRiskUpdate = "OnPhunRunnersPlayerRiskUpdate",
         OnPlayerEnvUpdate = "OnPhunRunnersPlayerEnvUpdate"
     },
-    pendingRemovals = [
-
-    ],
+    pendingRemovals = {},
     resetIds = {},
     baseOutfits = {
         christmas = {
@@ -256,8 +255,8 @@ function Core:processUnregister()
             sendClientCommand(getPlayer(), self.name, self.commands.unregisterSprinter, {
                 ids = self.pendingRemovals
             })
-        elseif isServer()
-            print("PhunRunenrs: Notify clients of " .. #self.pendingRemovals .. " removal(s)")
+        elseif isServer() then
+            print("PhunRunenrs: Notify clients of " .. (#self.pendingRemovals) .. " removal(s)")
             sendServerCommand(self.name, self.commands.unregisterSprinter, {
                 ids = self.pendingRemovals
             })
