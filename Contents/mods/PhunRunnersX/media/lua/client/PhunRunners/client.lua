@@ -272,7 +272,7 @@ function PR:updatePlayer(playerObj, zone)
     local pData = playerObj:getModData()
 
     if not zone then
-        zone = PhunZones:updateModData(playerObj, true)
+        zone = PhunZones:updateModData(playerObj)
     end
     local pstats = phunStats:getData(name)
 
