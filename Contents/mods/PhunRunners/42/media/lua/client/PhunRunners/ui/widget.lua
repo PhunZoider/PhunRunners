@@ -4,7 +4,7 @@ end
 require("ISUI/Maps/ISMiniMap")
 local formatting = require("PhunRunners/formating")
 local PR = PhunRunners
-local sandbox = SandboxVars.PhunZones
+local PhunStats = PhunStats
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
@@ -170,15 +170,10 @@ function UI:onMouseMove(dx, dy)
 
 end
 
-local phunStats = nil
-
 function UI:doTooltip()
     local x = self:getMouseX() + 20;
     local y = self:getMouseY() + 20;
 
-    if phunStats == nil then
-        phunStats = PhunStats
-    end
     self.data = PR:updatePlayer(self.player)
     local titleHeight = FONT_HGT_MEDIUM;
 

@@ -128,3 +128,13 @@ option PhunRunners.DeferUnregistereSeconds
     page=PhunRunners,
     translation = PhunRunnersDeferUnregistereSeconds
 }
+
+option PhunRunners.FrequencyOfEnvUpdate
+{
+    type = integer, 
+    default = 1, 
+    min = 0,
+    max = 999,
+    page=PhunRunners,
+    translation = PhunRunnersDeferUnregistereSeconds
+}

@@ -3,7 +3,6 @@ if isServer() then
 end
 local PR = PhunRunners
 local getOnlinePlayers = getOnlinePlayers
-local sandbox = SandboxVars.PhunRunners
 local slowInLightLevel = nil
 
 local function getDistance(fromX, fromY, toX, toY)
@@ -196,7 +195,7 @@ function PR:scream(zed, zData)
     zData.screamed = true
     local soundName = "PhunRunners_" .. ZombRand(1, 5)
     if not zed:getEmitter():isPlaying(soundName) then
-        local vol = sandbox.PhunRunnersSprinterVolume or 25 * .01
+        local vol = self.settings.PhunRunnersSprinterVolume or 25 * .01
         local soundEmitter = getWorld():getFreeEmitter()
         local hnd = soundEmitter:playSound(soundName, zed:getX(), zed:getY(), zed:getZ())
         soundEmitter:setVolume(hnd, vol)

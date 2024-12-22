@@ -3,7 +3,7 @@ if isServer() then
 end
 local PR = PhunRunners
 local PhunStats = PhunStats
-local sandbox = SandboxVars.PhunRunners
+local PhunZones = PhunZones
 local sandboxOptions = getSandboxOptions()
 local world = getWorld()
 local tickRate = sandbox.TickRate or 20
@@ -13,13 +13,13 @@ local diffText = {"min", "low", "moderate", "high", "extreme"}
 
 -- Trigger audio notification that sprinters will start running
 function PR:startSprintersSound(playerObj)
-    local vol = (sandbox.PhunRunnersVolume or 15) * .01
+    local vol = (self.settings.PhunRunnersVolume or 15) * .01
     getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(vol);
 end
 
 -- Trigger audio notification that sprinters will stop running
 function PR:stopSprintersSound(playerObj)
-    local vol = (sandbox.PhunRunnersVolume or 15) * .01
+    local vol = (self.settings.PhunRunnersVolume or 15) * .01
     getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(vol);
 end
 
@@ -208,8 +208,6 @@ function PR:resetModifiers()
     modifiers.inied = false
 end
 
-local phunStats = nil
-
 -- update local db with players risk shit
 function PR:updatePlayer(playerObj, zone)
 
@@ -218,6 +216,7 @@ function PR:updatePlayer(playerObj, zone)
     end
 
     if not modifiers.inied then
+
         modifiers.inied = true
         modifiers.hours = nil
 
@@ -240,7 +239,7 @@ function PR:updatePlayer(playerObj, zone)
         }
 
         for k, v in pairs(modifierMap) do
-            local raw = sandbox[v.setting] or ""
+            local raw = self.settings[v.setting] or ""
             raw = luautils.split(raw, ";")
             if raw and #raw > 0 then
                 if v.array then
@@ -264,17 +263,12 @@ function PR:updatePlayer(playerObj, zone)
     local name = playerObj:getUsername()
     local playerData = self:getPlayerData(name)
     local env = self:getEnvironment()
-
-    if phunStats == nil then
-        phunStats = PhunStats
-    end
-
     local pData = playerObj:getModData()
 
-    if not zone then
+    if not zone and PhunZones then
         zone = PhunZones:updateModData(playerObj)
     end
-    local pstats = phunStats:getData(name)
+    local pstats = PhunStats and PhunStats:getData(name)
 
     local zoneDifficulty = zone.difficulty or 1
     local charHours = pstats.current.hours or 0
@@ -282,8 +276,8 @@ function PR:updatePlayer(playerObj, zone)
     local totalKills = pstats.total.zombieKills or 0
     local totalSprinters = pstats.total.sprinterKills or 0
 
-    local gHours = sandbox.GraceHours or 1
-    local gTotalHours = sandbox.GraceTotalHours or 24
+    local gHours = self.settings.GraceHours or 1
+    local gTotalHours = self.settings.GraceTotalHours or 24
     local inGrace = charHours < gHours or hours < gTotalHours
     local sprinterKillRisk = 0
     local timerRisk = 0
@@ -315,16 +309,17 @@ function PR:updatePlayer(playerObj, zone)
     moonPhaseModifierValue = (mods and mods.moon and mods.moon[m] or 100) * .01
     local totalRisk = math.min(100, (zoneRisk + timerRisk + sprinterKillRisk) * moonPhaseModifierValue)
 
-    if env.value > sandbox.SlowInLightLevel then
+    if env.value > self.settings.SlowInLightLevel then
         -- too bright for sprinters (green)
         lightModifier = 0
-    elseif env.value < sandbox.DarknessLevel then
+    elseif env.value < self.settings.DarknessLevel then
         -- dark enough for sprinters (red)
         lightModifier = 100
     else
         -- somewhere in between (yellow)
         -- TODO: Alternatively, maybe just leave as warning. Don't need to particularly adjust speeds on this
-        lightModifier = ((sandbox.SlowInLightLevel - sandbox.DarknessLevel) / (env.value - sandbox.DarknessLevel)) * 100
+        lightModifier = ((self.settings.SlowInLightLevel - self.settings.DarknessLevel) /
+                            (env.value - self.settings.DarknessLevel)) * 100
     end
 
     local graceHours = math.max(0, math.max((gHours or 1) - charHours, (gTotalHours or 24) - hours))
@@ -402,78 +397,4 @@ function PR:updatePlayers()
             self:updatePlayer(p)
         end
     end
-end
-
--- return variables for tooltips to breakdown the risk profile
-function PR:getSummary(playerObj)
-
-    local risk = PR:getPlayerData(playerObj)
-    local riskDesc = {}
-    local riskModifiers = {}
-
-    local grace = math.floor(risk.grace or 0)
-
-    local diffSuffix = "extreme"
-
-    if diffText[tonumber((risk.difficulty or 0)) + 1] then
-        diffSuffix = diffText[tonumber((risk.difficulty or 0)) + 1]
-    end
-
-    table.insert(riskDesc, getText("IGUI_PhunRunners_AreaRisk." .. diffSuffix))
-
-    if grace > 1 then
-        table.insert(riskDesc, getText("IGUI_PhunRunners_IgnoringYouForAnotherXHours", grace) .. "\n")
-    elseif grace > 0 then
-        table.insert(riskDesc, getText("IGUI_PhunRunners_IgnoringYouForAnotherXHour") .. "\n")
-    end
-
-    table.insert(riskDesc, getText("IGUI_PhunRunners_RiskLevel", math.floor(risk.risk + 0.5)))
-
-    if risk.modifier and risk.modifier > 0 and risk.modifier < 100 then
-        table.insert(riskModifiers,
-            getText("IGUI_PhunRunners_Modifier.darkness", tostring(math.floor(risk.modifier + 0.5))))
-    end
-
-    if PR.env and PR.env.moon and risk.moonMultiplier then
-
-        if risk.moonMultiplier < 1 then
-            table.insert(riskDesc,
-                getText("IGUI_PhunRunners_RiskFromMoon", "-" .. math.floor(((1 - risk.moonMultiplier) * 100) + .05),
-                    getText("IGUI_PhunRunners_MoonPhase" .. PR.env.moon + 1)))
-        elseif risk.moonMultiplier > 1 then
-            table.insert(riskDesc,
-                getText("IGUI_PhunRunners_RiskFromMoon", "+" .. math.floor(((risk.moonMultiplier) * 100) + .05),
-                    getText("IGUI_PhunRunners_MoonPhase" .. PR.env.moon + 1)))
-        end
-    end
-
-    if #riskModifiers > 0 then
-        table.insert(riskDesc, getText("IGUI_PhunRunners_Modifiers"))
-        for _, v in ipairs(riskModifiers) do
-            table.insert(riskDesc, " " .. v)
-        end
-    end
-
-    if risk.modifier and risk.modifier > 0 then
-        table.insert(riskDesc, "\n")
-        if risk.modifier >= 100 then
-            table.insert(riskDesc, getText("IGUI_PhunRunners_ZedsAreRabid"))
-        else
-            table.insert(riskDesc, getText("IGUI_PhunRunners_ZedsAreRestless"))
-        end
-    else
-        table.insert(riskDesc, "\n" .. getText("IGUI_PhunRunners_ZedsAreSettling"))
-    end
-
-    local results = {
-        risk = risk.risk,
-        spawnSprinters = risk.spawnSprinters == true,
-        restless = risk.restless == true,
-        title = risk.zone and risk.zone.title or "Wilderness",
-        subtitle = risk.zone and risk.zone.subtitle or nil,
-        description = table.concat(riskDesc, "\n")
-
-    }
-
-    return results
 end

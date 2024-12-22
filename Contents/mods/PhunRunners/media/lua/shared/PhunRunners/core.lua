@@ -180,6 +180,7 @@ PhunRunners = {
 }
 
 local Core = PhunRunners
+Core.settings = SandboxVars[Core.name] or {}
 
 for _, event in pairs(PhunRunners.events) do
     if not Events[event] then

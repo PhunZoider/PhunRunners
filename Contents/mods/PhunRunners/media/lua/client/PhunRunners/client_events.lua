@@ -3,6 +3,8 @@ if isServer() then
 end
 local Commands = require("PhuNRunners/client_commands")
 local PR = PhunRunners
+local PhunZones = PhunZones
+local PhunStats = PhunStats
 local getOnlinePlayers = getOnlinePlayers
 local iniedPhunStats = false
 local iniedPhunZones = false
@@ -14,7 +16,6 @@ if PhunZones then
             iniedPhunZones = true
             if iniedPhunStats then
                 PR:updatePlayers()
-                PR:recalcOutfits()
             end
         end
     end)
@@ -26,12 +27,10 @@ end
 
 if PhunStats then
     Events[PhunStats.events.OnReady].Add(function()
-
         if not iniedPhunStats then
             iniedPhunStats = true
             if iniedPhunZones then
                 PR:updatePlayers()
-                PR:recalcOutfits()
             end
         end
     end)
@@ -42,16 +41,21 @@ local function setup()
     PR:ini()
     ModData.request(PR.name)
     PR:caclculateEnv()
-    PR:updatePlayers()
     PR:recalcOutfits()
     PR:showWidgets()
-end
-Events.OnTick.Add(setup)
 
-Events.EveryOneMinute.Add(function()
-    PR:caclculateEnv()
-    PR:updatePlayers()
-end)
+    local nextCheck = 0
+    local every = PR.settings.FrequencyOfEnvUpdate
+    local getTimestamp = getTimestamp
+    Events.OnTick.Add(function()
+        if getTimestamp() >= nextCheck then
+            nextCheck = getTimestamp() + every
+            PR:caclculateEnv()
+        end
+    end)
+end
+
+Events.OnTick.Add(setup)
 
 Events.OnDawn.Add(function()
     PR:recalcOutfits()
