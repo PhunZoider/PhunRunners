@@ -1,5 +1,4 @@
 local Delay = require("PhunRunners/delay")
-local sandbox = SandboxVars.PhunRunners
 
 PhunRunners = {
     inied = false,
@@ -284,7 +283,7 @@ function Core:processUnregister()
     end
 
     -- reset delay
-    Delay:set(sandbox.DeferUnregistereSeconds or 30, function()
+    Delay:set(PhunRunners.settings.DeferUnregistereSeconds or 30, function()
         PhunRunners:processUnregister()
     end, "processUnregister")
     -- TODO: Maybe just do every dawn?

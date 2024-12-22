@@ -176,7 +176,7 @@ end
 function PR:adjustForLight(zed, zData, player)
 
     if slowInLightLevel == nil then
-        slowInLightLevel = (sandbox.SlowInLightLevel or 74) * .01
+        slowInLightLevel = (self.settings.SlowInLightLevel or 74) * .01
     end
 
     local zsquare = zed:getCurrentSquare()
