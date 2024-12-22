@@ -2,12 +2,12 @@ if isServer() then
     return
 end
 require("ISUI/Maps/ISMiniMap")
+local formatting = require("PhunRunners/formating")
 local PR = PhunRunners
 local sandbox = SandboxVars.PhunZones
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
-
 local FONT_SCALE = FONT_HGT_SMALL / 14
 local HEADER_HGT = FONT_HGT_MEDIUM + 2 * 2
 
@@ -22,7 +22,6 @@ function UI.OnOpenPanel(playerObj, playerIndex)
 
     if not UI.instances[playerIndex] then
         local core = getCore()
-        local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 14
         local width = 50 * FONT_SCALE
         local height = 20 * FONT_SCALE
 
@@ -186,8 +185,8 @@ function UI:doTooltip()
     local texts = {}
     table.insert(texts, "Risk: " .. tostring(self.data.risk) .. "%")
     -- table.insert(texts, "Difficulty: " .. tostring(self.data.difficulty))
-    table.insert(texts, "Char Hours: " .. PhunTools:formatWholeNumber(self.data.hours or 0))
-    table.insert(texts, "Total Hours: " .. PhunTools:formatWholeNumber(self.data.totalHours or 0))
+    table.insert(texts, "Char Hours: " .. formatting:formatWholeNumber(self.data.hours or 0))
+    table.insert(texts, "Total Hours: " .. formatting:formatWholeNumber(self.data.totalHours or 0))
     table.insert(texts, "Total Kills: " .. tostring(self.data.totalKills or 0))
     table.insert(texts, "Sprinter Kills: " .. tostring(self.data.totalSprinters or 0))
     table.insert(texts, "Grace: " .. tostring(self.data.grace))

@@ -4,6 +4,8 @@ end
 local Delay = require "PhunRunners/delay"
 local Commands = require "PhunRunners/server_commands"
 local PR = PhunRunners
+local emptyServerTickCount = 0
+local emptyServerCalculate = false
 
 Events.EveryHours.Add(function()
     -- PR:clean()
@@ -17,13 +19,23 @@ Events.OnInitGlobalModData.Add(function()
     PR:ini()
 end)
 
-PhunTools:RunOnceWhenServerEmpties(PR.name, function()
-    PR:clean()
-end)
-
 Events.OnClientCommand.Add(function(module, command, playerObj, arguments)
     if module == PR.name and Commands[command] then
         Commands[command](playerObj, arguments)
+    end
+end)
+
+Events.OnTickEvenPaused.Add(function()
+    if emptyServerCalculate and emptyServerTickCount > 100 then
+        if getOnlinePlayers():size() == 0 then
+            emptyServerCalculate = false
+            print(PR.name .. ": Server is now empty")
+            PR:clean()
+        end
+    elseif emptyServerTickCount > 100 then
+        emptyServerTickCount = 0
+    else
+        emptyServerTickCount = emptyServerTickCount + 1
     end
 end)
 
@@ -32,7 +44,6 @@ function PR:serverSendUnregisters()
     if seconds and seconds > 0 then
         Delay:set(seconds, function()
             if #PR.toUnregister > 0 then
-                -- PhunTools:printTable(PhunRunners.toUnregister)
                 sendServerCommand(self.name, self.commands.unregisterSprinter, {
                     ids = PR.toUnregister
                 })
