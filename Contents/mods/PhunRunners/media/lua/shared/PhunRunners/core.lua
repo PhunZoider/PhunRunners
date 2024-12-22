@@ -182,7 +182,7 @@ PhunRunners = {
 local Core = PhunRunners
 Core.settings = SandboxVars[Core.name] or {}
 
-for _, event in pairs(PhunRunners.events) do
+for _, event in pairs(Core.events) do
     if not Events[event] then
         LuaEventManager.AddEvent(event)
     end
