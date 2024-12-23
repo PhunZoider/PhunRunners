@@ -4,13 +4,39 @@
         "commands": [
             {
                 "match": ".*",
-                "isAsync": true,
-                "cmd": "xcopy ${workspaceFolder}\\Contents ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunRunners\\Contents /Y /I /E /F /EXCLUDE:xclude"
+                "cmd": "rmdir /S /Q ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners 2>nul"
             },
             {
-                "match": "Contents\\.*",
-                "isAsync": true,
-                "cmd": "xcopy ${workspaceFolder}\\Contents\\mods ${env.USERPROFILE}\\Zomboid\\mods /Y /I /E /F"
+                "match": ".*",
+                "cmd": "xcopy ${workspaceFolder}\\Contents\\mods ${env.USERPROFILE}\\Zomboid\\mods /Y /I /E /F /EXCLUDE:xclude"
+            },
+            {
+                "match": ".*",
+                "cmd": "xcopy ${workspaceFolder}\\Contents\\mods\\PhunRunners\\media ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners\\42\\media /Y /I /E /F"
+            },
+            {
+                "match": ".*",
+                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunRunners\\mod.info ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners\\42\\mod.info /Y"
+            },
+            {
+                "match": ".*",
+                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunRunners\\poster.png ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners\\42\\poster.png /Y"
+            },
+            {
+                "match": ".*",
+                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunRunners\\icon.png ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners\\42\\icon.png /Y"
+            },
+            {
+                "match": ".*",
+                "cmd": "rmdir /S /Q ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunRunners 2>nul"
+            },
+            {
+                "match": ".*",
+                "cmd": "xcopy ${workspaceFolder} ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunRunners /Y /I /E /F /EXCLUDE:xclude"
+            },
+            {
+                "match": ".*",
+                "cmd": "xcopy ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunRunners\\Contents\\mods\\PhunRunners /Y /I /E /F"
             },
         ]
     },

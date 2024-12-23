@@ -39,6 +39,10 @@ Events.OnTickEvenPaused.Add(function()
     end
 end)
 
+Events.EveryTenMinutes.Add(function()
+    emptyServerCalculate = getOnlinePlayers():size() > 0
+end)
+
 function PR:serverSendUnregisters()
     local seconds = PR.settings.deferUnregistereSeconds
     if seconds and seconds > 0 then
