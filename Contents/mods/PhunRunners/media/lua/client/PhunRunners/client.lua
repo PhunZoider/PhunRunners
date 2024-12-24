@@ -140,6 +140,9 @@ function PR:caclculateEnv()
 
     local climate = getClimateManager()
 
+    local lastAdjustedLightIntensity = self.env and self.env.value or 0
+    local lastMoon = self.env and self.env.moon or 0
+
     -- get daylight intensity
     local lightIntensity = math.max(0, math.floor((climate:getDayLightStrength() * 100) + 0.5))
     -- get fog intensity
@@ -158,6 +161,10 @@ function PR:caclculateEnv()
         fog = fogIntensity,
         moon = getClimateMoon():getCurrentMoonPhase()
     }
+
+    if lastAdjustedLightIntensity ~= adjustedLightIntensity or lastMoon ~= self.env.moon then
+        PR:updatePlayers()
+    end
 
     return self.env
 end
