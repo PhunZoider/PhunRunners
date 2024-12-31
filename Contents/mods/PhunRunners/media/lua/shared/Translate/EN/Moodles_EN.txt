@@ -1,0 +1,18 @@
+Moodles_EN {
+    Moodles_PhunRunners_Good_lvl1 = "Safe",
+    Moodles_PhunRunners_Good_desc_lvl1 = "You are safe from sprinters",
+    Moodles_PhunRunners_Good_lvl2 = "Very Low Risk",
+    Moodles_PhunRunners_Good_desc_lvl2 = "Very low levels of sprinters",
+    Moodles_PhunRunners_Good_lvl3 = "Low",
+    Moodles_PhunRunners_Good_desc_lvl3 = "Low levels of sprinters",
+    Moodles_PhunRunners_Good_lvl4 = "Sprinters",
+    Moodles_PhunRunners_Good_desc_lvl4 = "Sprinters are now appearing",
+    Moodles_PhunRunners_Bad_lvl1 = "Rare",
+    Moodles_PhunRunners_Bad_desc_lvl1 = "Sprinters are rare",
+    Moodles_PhunRunners_Bad_lvl2 = "Low",
+    Moodles_PhunRunners_Bad_desc_lvl2 = "Low levels of sprinters",
+    Moodles_PhunRunners_Bad_lvl3 = "Common",
+    Moodles_PhunRunners_Bad_desc_lvl3 = "It is common to see sprinters",
+    Moodles_PhunRunners_Bad_lvl4 = "High",
+    Moodles_PhunRunners_Bad_desc_lvl4 = "High level of sprinters",
+}

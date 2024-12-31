@@ -1,34 +1,43 @@
 Sandbox_EN = {
     Sandbox_PhunRunners = "PhunRunners"
 
-    Sandbox_PhunRunnersVolume = "Percentage Volume"
-    Sandbox_PhunRunnersVolume_tooltip = "Volume of sound played to notify players that sprinters are now on the run!"
+    Sandbox_PhunRunners_ShowMoodle = "Use Moodle"
+    Sandbox_PhunRunners_ShowMoodle_tooltip = "Show a moodle instead of the pips"
 
-    Sandbox_PhunRunnersSprinterVolume = "Percentage Sprinters Volume"
-    Sandbox_PhunRunnersSprinterVolume_tooltip = "Volume of sprinter screech"
+    Sandbox_PhunRunners_Volume = "Percentage Sprinters Volume"
+    Sandbox_PhunRunners_Volume_tooltip = "Volume of sprinter screech"
 
-    Sandbox_TickRate = "Tick Rate"
-    Sandbox_TickRate_tooltip = "Number of game ticks to defer between processing zed updates. A higher number can increase performance"
+    Sandbox_PhunRunners_TickRate = "Tick Rate"
+    Sandbox_PhunRunners_TickRate_tooltip = "Number of game ticks to defer between processing zed updates. A higher number can increase performance"
 
-    Sandbox_SlowInLightLevel = "Slow at brightness percent"
-    Sandbox_SlowInLightLevel_tooltip = "The percentage of lightness that sprinters will stop running in. If lightness is higher than this number, sprinters will start walking until it gets darker"
+    Sandbox_PhunRunners_SlowInLightLevel = "Slow at brightness percent"
+    Sandbox_PhunRunners_SlowInLightLevel_tooltip = "The percentage of light where all sprinters will stop running. If lightness is higher than this number, sprinters will start walking until it gets darker"
 
-    Sandbox_TotalHoursModifier = "Total hours modifier"
-    Sandbox_TotalHoursModifier_tooltip = "Semi-Colon delimited key value string in the fomrat of x=y;. x is the number of hours for an additional y percentage increase in risk. eg 10=1 will cause an additional 1 percent chance of sprinters forming after the player has been on the server for more than 10 hours. Note: First true value takes precedence"
+    Sandbox_PhunRunners_DarknessLevel = "Darkness level"
+    Sandbox_PhunRunners_DarknessLevel_tooltip = "Percentage of light where all sprinters will run. The difference between this and the Slowness value reduces the amount of sprinters that will be running (sort of a blended period of running)"
 
-    Sandbox_TotalSprintersModifier = "Total sprinters killed modifier"
-    Sandbox_TotalSprintersModifier_tooltip = "Semi-Colon delimited key value string in the fomrat of x=y;. x is the number of sprinters killed for an additional y percentage increase in risk. eg 10=1 will cause an additional 1 percent chance of sprinters forming after the player has killed 10 or more sprinters. Note: First true value takes precedence"
+    Sandbox_PhunRunners_TotalHoursModifier = "Total Hours Modifier"
+    Sandbox_PhunRunners_TotalHoursModifier_tooltip = "Semi-Colon delimited key value string in the format of x=y;. x is the number of in game total hours played across all characters for additional y percentage increase in risk. eg 10=1 will cause an additional 1 percent chance of sprinters forming after the player has played for more than 10 in game hours. Note: First true value takes precedence"
 
-    Sandbox_TotalDifficultyModifier = "Difficulty modifier"
-    Sandbox_TotalDifficultyModifier_tooltip = "Semi-Colon delimited string that maps to the difficultly level of the zone. eg 1;5;10;15 will translate to: 1 percent additional chance of sprinters in a zone with a difficulty of 1. A zone difficults of 3 would lead to a 10 percent increase. Note that this is best partnered with PhunZones mod"
+    Sandbox_PhunRunners_TotalSprintersModifier = "Total sprinters killed modifier"
+    Sandbox_PhunRunners_TotalSprintersModifier_tooltip = "Semi-Colon delimited key value string in the format of x=y;. x is the number of sprinters killed for an additional y percentage increase in risk. eg 10=1 will cause an additional 1 percent chance of sprinters forming after the player has killed 10 or more sprinters. Note: First true value takes precedence"
 
-    Sandbox_MoonModifier = "Moon phase modifier"
-    Sandbox_MoonModifier_tooltip = "Semi-Colon delimited value of percentages that corresponds with the 9 phases of the moon (New Moon, Crecent Moon, First Quarter, Gibbous Moon, Full Moon, Gibbous Moon, Last Quarter and Waning Crescent). a value of 50;80;90;100;200;100;90;80 would mean that the New Moon would reduce the risk level by 50% while a Full Moon would double the risk"
+    Sandbox_PhunRunners_DifficultyModifier = "Difficulty modifier"
+    Sandbox_PhunRunners_DifficultyModifier_tooltip = "Semi-Colon delimited string that maps to the difficultly level of the zone. eg 1;5;10;15 will translate to: 1 percent additional chance of sprinters in a zone with a difficulty of 1. A zone difficults of 3 would lead to a 10 percent increase. Note that this is best partnered with PhunZones mod"
 
-    Sandbox_GraceTotalHours = "Grace across all characters"
-    Sandbox_GraceTotalHours_tooltip = "Total amount of hours before spawning sprinters (regardless of how many characters the user has created)"
+    Sandbox_PhunRunners_MoonModifier = "Moon phase modifier"
+    Sandbox_PhunRunners_MoonModifier_tooltip = "Semi-Colon delimited value of percentages that corresponds with the 9 phases of the moon (New Moon, Crecent Moon, First Quarter, Gibbous Moon, Full Moon, Gibbous Moon, Last Quarter and Waning Crescent). a value of 50;80;90;100;200;100;90;80 would mean that the New Moon would reduce the risk level by 50% while a Full Moon would double the risk"
 
-    Sandbox_GraceHours = "Grace for character"
-    Sandbox_GraceHours_tooltip = "Number of hours a new character has before they start spawning sprinters"
+    Sandbox_PhunRunners_GraceTotalHours = "Grace across all characters"
+    Sandbox_PhunRunners_GraceTotalHours_tooltip = "Total amount of hours before spawning sprinters (regardless of how many characters the user has created)"
+
+    Sandbox_PhunRunners_GraceHours = "Grace for character"
+    Sandbox_PhunRunners_GraceHours_tooltip = "Number of hours a new character has before they start spawning sprinters"
+
+    Sandbox_PhunRunners_DeferUnregisterSeconds = "Unregister Sprinters Frequency"
+    Sandbox_PhunRunners_DeferUnregisterSeconds_tooltip = "Number of seconds between unregistering unused sprinters"
+
+    Sandbox_PhunRunners_FrequencyOfEnvUpdate = "Env Checks"
+    Sandbox_PhunRunners_FrequencyOfEnvUpdate_tooltip = "Number of seconds before recalculating enviromental changes like light and fog. Increase for improved performance"
 
 }

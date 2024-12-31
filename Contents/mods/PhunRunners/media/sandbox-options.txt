@@ -5,7 +5,7 @@ option PhunRunners.ShowMoodle
     type = boolean, 
     default = true,
     page=PhunRunners,
-    translation = PhunRunnersShowMoodle
+    translation = PhunRunners_ShowMoodle,
 }
 
 option PhunRunners.PhunRunnersVolume
@@ -15,7 +15,7 @@ option PhunRunners.PhunRunnersVolume
     min = 1,
     max = 100,
     page=PhunRunners,
-    translation = PhunRunnersVolume
+    translation = PhunRunners_Volume,
 }
 
 option PhunRunners.TickRate
@@ -25,7 +25,7 @@ option PhunRunners.TickRate
     min = 1,
     max = 1000,
     page = PhunRunners, 
-    translation = PhunRunnersTickRate
+    translation = PhunRunners_TickRate,
 }
 
 option PhunRunners.PhunRunnersSprinterVolume
@@ -35,7 +35,7 @@ option PhunRunners.PhunRunnersSprinterVolume
     min = 1,
     max = 100,
     page=PhunRunners,
-    translation = PhunRunnersSprinterVolume
+    translation = PhunRunnersSprinterVolume,
 }
 
 option PhunRunners.SlowInLightLevel
@@ -45,7 +45,7 @@ option PhunRunners.SlowInLightLevel
     min = 0,
     max = 100,
     page=PhunRunners,
-    translation = PhunRunnersSlowInLightLevel
+    translation = PhunRunners_SlowInLightLevel,
 }
 
 option PhunRunners.DarknessLevel
@@ -55,7 +55,7 @@ option PhunRunners.DarknessLevel
     min = 0,
     max = 100,
     page=PhunRunners,
-    translation = PhunRunnersDarknessLevel
+    translation = PhunRunners_DarknessLevel,
 }
 
 option PhunRunners.TotalHoursModifier
@@ -63,7 +63,7 @@ option PhunRunners.TotalHoursModifier
     type = string,
     default = 1000=18;500=12;250=8,
     page = PhunRunners,
-    translation = PhunRunnersTotalHoursModifier
+    translation = PhunRunners_TotalHoursModifier,
 }
 
 
@@ -72,7 +72,7 @@ option PhunRunners.TotalSprintersModifier
     type = string,
     default = 100=25;50=20;25=15;10=10;5=5,
     page = PhunRunners,
-    translation = PhunRunnersTotalSprintersModifier
+    translation = PhunRunners_TotalSprintersModifier,
 }
 
 option PhunRunners.TotalDifficultyModifier
@@ -80,7 +80,7 @@ option PhunRunners.TotalDifficultyModifier
     type = string,
     default = 0;5;10;15;100,
     page = PhunRunners,
-    translation = PhunRunnersDifficultyModifier
+    translation = PhunRunners_DifficultyModifier,
 }
 
 option PhunRunners.TotalMoonModifier
@@ -88,7 +88,7 @@ option PhunRunners.TotalMoonModifier
     type = string,
     default = 50;80;90;110;200;110;90;80,
     page = PhunRunners,
-    translation = PhunRunnersMoonModifier
+    translation = PhunRunners_MoonModifier,
 }
 
 option PhunRunners.GraceTotalHours
@@ -98,7 +98,7 @@ option PhunRunners.GraceTotalHours
     min = 0,
     max = 999,
     page=PhunRunners,
-    translation = PhunRunnersGraceTotalHours
+    translation = PhunRunners_GraceTotalHours,
 }
 
 option PhunRunners.GraceHours
@@ -108,25 +108,17 @@ option PhunRunners.GraceHours
     min = 0,
     max = 999,
     page=PhunRunners,
-    translation = PhunRunnersGraceHours
+    translation = PhunRunners_GraceHours,
 }
 
-option PhunRunners.UnregisterBatches
-{
-    type = boolean, 
-    default = true,
-    page=PhunRunners,
-    translation = PhunRunnersUnregisterBatches
-}
-
-option PhunRunners.DeferUnregistereSeconds
+option PhunRunners.DeferUnregisterSeconds
 {
     type = integer, 
     default = 240, 
     min = 0,
     max = 999,
     page=PhunRunners,
-    translation = PhunRunnersDeferUnregistereSeconds
+    translation=PhunRunners_DeferUnregisterSeconds,
 }
 
 option PhunRunners.FrequencyOfEnvUpdate
@@ -136,5 +128,5 @@ option PhunRunners.FrequencyOfEnvUpdate
     min = 0,
     max = 999,
     page=PhunRunners,
-    translation = PhunRunnersDeferUnregistereSeconds
+    translation=PhunRunners_FrequencyOfEnvUpdate,
 }

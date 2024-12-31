@@ -174,7 +174,7 @@ PhunRunners = {
     registry = {},
     toUnregister = {},
     settings = {
-        deferUnregistereSeconds = 240
+        DeferUnregisterSeconds = 240
     }
 }
 
@@ -188,14 +188,14 @@ for _, event in pairs(Core.events) do
 end
 
 function Core:debug(...)
-        local args = {...}
-        for i, v in ipairs(args) do
-            if type(v) == "table" then
-                self:printTable(v)
-            else
-                print(tostring(v))
-            end
+    local args = {...}
+    for i, v in ipairs(args) do
+        if type(v) == "table" then
+            self:printTable(v)
+        else
+            print(tostring(v))
         end
+    end
 end
 
 function Core:printTable(t, indent)
@@ -281,7 +281,7 @@ function Core:processUnregister()
     end
 
     -- reset delay
-    Delay:set(PhunRunners.settings.DeferUnregistereSeconds or 30, function()
+    Delay:set(PhunRunners.settings.DeferUnregisterSeconds or 30, function()
         PhunRunners:processUnregister()
     end, "processUnregister")
     -- TODO: Maybe just do every dawn?

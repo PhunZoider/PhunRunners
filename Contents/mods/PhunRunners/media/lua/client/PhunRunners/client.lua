@@ -184,7 +184,9 @@ function PR:showWidgets()
     for i = 0, getOnlinePlayers():size() - 1 do
         local p = getOnlinePlayers():get(i)
         if p:isLocalPlayer() then
-            self:showWidget(p)
+            if not self.settings.ShowMoodle then
+                self:showWidget(p)
+            end
         end
     end
 end
@@ -268,12 +270,15 @@ function PR:updatePlayer(playerObj, zone)
     end
 
     local name = playerObj:getUsername()
-    local playerData = self:getPlayerData(name)
+    local modData = playerObj:getModData()
+    if not modData.PhunRunners then
+        modData.PhunRunners = {}
+    end
+    local playerData = self:getPlayerData(playerObj)
     local env = self:getEnvironment()
-    local pData = playerObj:getModData()
 
     if not zone and PhunZones then
-        zone = PhunZones:updateModData(playerObj)
+        zone = modData.PhunZones or PhunZones:getPlayerData(playerObj)
     end
     local pstats = PhunStats and PhunStats:getData(name)
 
@@ -313,7 +318,7 @@ function PR:updatePlayer(playerObj, zone)
 
     local mods = modifiers
     local m = env.moon
-    moonPhaseModifierValue = (mods and mods.moon and mods.moon[m] or 100) * .01
+    moonPhaseModifierValue = (mods and mods.moon and mods.moon[m + 1] or 100) * .01
     local totalRisk = math.min(100, (zoneRisk + timerRisk + sprinterKillRisk) * moonPhaseModifierValue)
 
     if env.value > self.settings.SlowInLightLevel then
@@ -355,7 +360,24 @@ function PR:updatePlayer(playerObj, zone)
         pd.spawnSprinters = false
     end
 
-    if pd.spawnSprinters ~= playerData.spawnSprinters then
+    local oldSpawnSprinters = playerData.spawnSprinters
+    local oldRisk = playerData.risk
+
+    local zoneChanged = false
+    local moonChanged = false
+    if playerData.zone then
+        if playerData.zone.region ~= zone.region or playerData.zone.zone ~= zone.zone then
+            zoneChanged = true
+        end
+    end
+    if modData.PhunRunners.env == nil or env.moon ~= modData.PhunRunners.env.moon then
+        moonChanged = true
+    end
+
+    self.players[name] = pd
+    modData.PhunRunners = pd
+
+    if pd.spawnSprinters ~= oldSpawnSprinters then
         if pd.spawnSprinters then
             print("Player ", name, " is now spawning sprinters")
             triggerEvent(PR.events.OnPlayerStartSpawningSprinters, playerObj)
@@ -365,11 +387,13 @@ function PR:updatePlayer(playerObj, zone)
             triggerEvent(PR.events.OnPlayerStopSpawningSprinters, playerObj)
             self:stopSprintersSound(playerObj)
         end
-    elseif pd.risk ~= playerData.risk then
-        triggerEvent(PR.events.OnPlayerRiskUpdate, playerObj, pd)
     end
 
-    self.players[name] = pd
+    if pd.risk ~= oldRisk or zoneChanged or moonChanged or pd.spawnSprinters ~= oldSpawnSprinters then
+        triggerEvent(PR.events.OnPlayerRiskUpdate, playerObj, pd)
+
+    end
+    PR.moodles:update(playerObj, pd)
     return pd
 
 end

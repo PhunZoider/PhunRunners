@@ -44,7 +44,7 @@ Events.EveryTenMinutes.Add(function()
 end)
 
 function PR:serverSendUnregisters()
-    local seconds = PR.settings.deferUnregistereSeconds
+    local seconds = PR.settings.DeferUnregisterSeconds
     if seconds and seconds > 0 then
         Delay:set(seconds, function()
             if #PR.toUnregister > 0 then
