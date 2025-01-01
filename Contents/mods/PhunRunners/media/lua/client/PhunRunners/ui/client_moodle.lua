@@ -81,10 +81,10 @@ function PR.moodles:update(player, data)
     -- table.insert(texts, "Light: " .. tostring(pd.env.light) .. "%")
     local multiplier = (pd.moonMultiplier - 1) * 100
     if multiplier > 0 then
-        multiplier = "+" .. formatNumber(multiplier) .. "%"
+        multiplier = "" .. formatNumber(multiplier) .. "%"
         -- multiplier = multiplier - 100
     elseif multiplier < 0 then
-        multiplier = "-" .. formatNumber(multiplier) .. "%"
+        multiplier = "" .. formatNumber(multiplier) .. "%"
     else
         multiplier = ""
     end
