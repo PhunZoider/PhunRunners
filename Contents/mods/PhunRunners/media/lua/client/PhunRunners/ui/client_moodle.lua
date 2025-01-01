@@ -66,7 +66,7 @@ function PR.moodles:update(player, data)
     moodle:setValue(value)
 
     local texts = {}
-    table.insert(texts, "Chance: " .. tostring(pd.risk) .. "%")
+    table.insert(texts, "Chance: " .. formatNumber(pd.risk, true) .. "%")
     table.insert(texts, " - Area: " .. riskLevelNames[pd.difficulty + 1] .. " " .. tostring(pd.zoneRisk) .. "%")
     -- table.insert(texts, "Light: " .. tostring(pd.env.value) .. "%")
 
