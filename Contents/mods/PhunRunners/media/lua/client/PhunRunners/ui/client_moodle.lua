@@ -135,7 +135,16 @@ function PR.moodles:update(player, data)
 
     local now = getGameTime():getHoursSurvived()
     if now - (pd.riskChanged or 0) < 0.15 then
+        for k, v in pairs(chevrons) do
+            if pd.risk >= k then
+                moodle:setChevronCount(v)
+                break
+            end
+        end
+
         moodle:setChevronIsUp(pd.oldRisk and (pd.oldRisk < pd.risk))
+    else
+        moodle:setChevronCount(0)
     end
 
     inied[tostring(player)] = chevys
