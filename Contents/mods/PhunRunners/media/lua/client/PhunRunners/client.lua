@@ -390,6 +390,10 @@ function PR:updatePlayer(playerObj, zone)
     end
 
     if pd.risk ~= oldRisk or zoneChanged or moonChanged or pd.spawnSprinters ~= oldSpawnSprinters then
+        if pd.risk ~= oldRisk then
+            pd.oldRisk = oldRisk
+            pd.riskChanged = getGameTime():getHoursSurvived()
+        end
         triggerEvent(PR.events.OnPlayerRiskUpdate, playerObj, pd)
 
     end

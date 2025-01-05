@@ -61,6 +61,11 @@ function PR.moodles:update(player, data)
 
     local pd = data or player:getModData().PhunRunners or {}
 
+    if not pd.spawnSprinters and not isAdmin() then
+        moodle.disable = false
+        return
+    end
+
     local value = 1 - (data.risk * .01)
 
     moodle:setValue(value)
@@ -68,17 +73,7 @@ function PR.moodles:update(player, data)
     local texts = {}
     table.insert(texts, "Chance: " .. formatNumber(pd.risk, true) .. "%")
     table.insert(texts, " - Area: " .. riskLevelNames[pd.difficulty + 1] .. " " .. tostring(pd.zoneRisk) .. "%")
-    -- table.insert(texts, "Light: " .. tostring(pd.env.value) .. "%")
 
-    -- table.insert(texts, "Difficulty: " .. tostring(pd.difficulty))
-    -- table.insert(texts, "Char Hours: " .. formatNumber(pd.hours or 0))
-    -- table.insert(texts, "Total Hours: " .. formatNumber(pd.totalHours or 0))
-    -- table.insert(texts, "Total Kills: " .. tostring(pd.totalKills or 0))
-    -- table.insert(texts, "Sprinter Kills: " .. tostring(pd.totalSprinters or 0))
-    -- table.insert(texts, "Grace: " .. tostring(pd.grace))
-    -- table.insert(texts, "Modifier: " .. tostring(pd.modifier) .. "%")
-    -- table.insert(texts, "Fog1: " .. tostring(pd.env.fog) .. "%")
-    -- table.insert(texts, "Light: " .. tostring(pd.env.light) .. "%")
     local multiplier = (pd.moonMultiplier - 1) * 100
     if multiplier > 0 then
         multiplier = "" .. formatNumber(multiplier) .. "%"
@@ -92,13 +87,6 @@ function PR.moodles:update(player, data)
     if pd.grace > 0 then
         table.insert(texts, " - Grace: " .. tostring(pd.grace))
     end
-
-    -- table.insert(texts, "Moon Multiplier: " .. tostring(pd.moonMultiplier) .. "%")
-    -- table.insert(texts, "Value: " .. tostring(pd.env.value) .. "%")
-    -- table.insert(texts, "Restless: " .. tostring(pd.spawnSprinters))
-    -- table.insert(texts, "Spawn Sprinters: " .. tostring(pd.spawnSprinters))
-    -- table.insert(texts, "Sprinters Killed: " .. tostring(pd.sprinterKillRisk) .. "%")
-    -- table.insert(texts, "Timer: " .. tostring(pd.timerRisk) .. "%")
 
     if pd.env.value <= PR.settings.DarknessLevel then
         table.insert(texts, "Dark: " .. tostring(formatNumber(pd.env.value)) .. "%")
@@ -115,6 +103,26 @@ function PR.moodles:update(player, data)
         end
     end
 
+    if isAdmin() then
+        table.insert(texts, "Light: " .. tostring(pd.env.value) .. "%")
+
+        table.insert(texts, "Difficulty: " .. tostring(pd.difficulty))
+        table.insert(texts, "Char Hours: " .. formatNumber(pd.hours or 0))
+        table.insert(texts, "Total Hours: " .. formatNumber(pd.totalHours or 0))
+        table.insert(texts, "Total Kills: " .. tostring(pd.totalKills or 0))
+        table.insert(texts, "Sprinter Kills: " .. tostring(pd.totalSprinters or 0))
+        table.insert(texts, "Grace: " .. tostring(pd.grace))
+        table.insert(texts, "Modifier: " .. tostring(pd.modifier) .. "%")
+        table.insert(texts, "Fog1: " .. tostring(pd.env.fog) .. "%")
+        table.insert(texts, "Light: " .. tostring(pd.env.light) .. "%")
+        table.insert(texts, "Moon Multiplier: " .. tostring(pd.moonMultiplier) .. "%")
+        table.insert(texts, "Value: " .. tostring(pd.env.value) .. "%")
+        table.insert(texts, "Restless: " .. tostring(pd.spawnSprinters))
+        table.insert(texts, "Spawn Sprinters: " .. tostring(pd.spawnSprinters))
+        table.insert(texts, "Sprinters Killed: " .. tostring(pd.sprinterKillRisk) .. "%")
+        table.insert(texts, "Timer: " .. tostring(pd.timerRisk) .. "%")
+    end
+
     local chevys = 0
     for k, v in pairs(chevrons) do
         if pd.risk >= k then
@@ -124,11 +132,12 @@ function PR.moodles:update(player, data)
     end
 
     moodle:setChevronCount(chevys)
-    if inied[tostring(player)] > chevys then
-        moodle:setChevronIsUp(false)
-    else
-        moodle:setChevronIsUp(true)
+
+    local now = getGameTime():getHoursSurvived()
+    if now - (pd.riskChanged or 0) < 0.15 then
+        moodle:setChevronIsUp(pd.oldRisk and (pd.oldRisk < pd.risk))
     end
+
     inied[tostring(player)] = chevys
 
     -- if data.rate then

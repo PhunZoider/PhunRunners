@@ -44,17 +44,17 @@ Events.EveryTenMinutes.Add(function()
 end)
 
 function PR:serverSendUnregisters()
-    local seconds = PR.settings.DeferUnregisterSeconds
-    if seconds and seconds > 0 then
-        Delay:set(seconds, function()
-            if #PR.toUnregister > 0 then
-                sendServerCommand(self.name, self.commands.unregisterSprinter, {
-                    ids = PR.toUnregister
-                })
-            end
-            PR:serverSendUnregisters()
-        end, "transmitUnregisters")
-    end
+    -- local seconds = PR.settings.DeferUnregisterSeconds
+    -- if seconds and seconds > 0 then
+    --     Delay:set(seconds, function()
+    --         if #PR.toUnregister > 0 then
+    --             sendServerCommand(self.name, self.commands.unregisterSprinter, {
+    --                 ids = PR.toUnregister
+    --             })
+    --         end
+    --         PR:serverSendUnregisters()
+    --     end, "transmitUnregisters")
+    -- end
 end
 
 local function setup()
