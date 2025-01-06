@@ -5,7 +5,6 @@ local Commands = require("PhuNRunners/client_commands")
 local PR = PhunRunners
 local PhunZones = PhunZones
 local PhunStats = PhunStats
-local getOnlinePlayers = getOnlinePlayers
 local iniedPhunStats = false
 local iniedPhunZones = false
 

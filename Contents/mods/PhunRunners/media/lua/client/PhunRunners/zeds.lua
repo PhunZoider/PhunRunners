@@ -2,7 +2,6 @@ if isServer() then
     return
 end
 local PR = PhunRunners
-local getOnlinePlayers = getOnlinePlayers
 local slowInLightLevel = nil
 
 local function getDistance(fromX, fromY, toX, toY)
@@ -113,9 +112,9 @@ end
 function PR:testPlayers(zed, zData)
 
     local isVisible = false
-
-    for i = 0, getOnlinePlayers():size() - 1 do
-        local p = getOnlinePlayers():get(i)
+    local players = self:onlinePlayers(true)
+    for i = 0, players:size() - 1 do
+        local p = players:get(i)
         if p:isLocalPlayer() then
             local distance = getDistance(zed:getX(), zed:getY(), p:getX(), p:getY())
             if distance < 50 then
@@ -127,7 +126,7 @@ function PR:testPlayers(zed, zData)
                 end
 
                 if zData.sprinter and zed:getTarget() == p then
-                    if pData.spawnSprinters then
+                    if pData.restless then
                         self:adjustForLight(zed, zData, p)
                     elseif zData.sprinting then
                         self:normalSpeed(zed)

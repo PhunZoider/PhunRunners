@@ -3,7 +3,6 @@ if isClient() then
 end
 
 local PR = PhunRunners
-local getOnlinePlayers = getOnlinePlayers
 
 -- hmm, I think we are trying to reset all zeds in playerless chunks?
 function PR:clean()
@@ -13,9 +12,9 @@ function PR:clean()
 
     local sids = {}
     local tids = {}
-
-    for i = 0, getOnlinePlayers():size() - 1 do
-        local p = getOnlinePlayers():get(i)
+    local players = self:onlinePlayers(true)
+    for i = 0, players:size() - 1 do
+        local p = players:get(i)
         local cell = p:getCell()
         local cellKey = tostring(cell:getWorldX()) .. "_" .. tostring(cell:getWorldY())
         if not cells[cellKey] then

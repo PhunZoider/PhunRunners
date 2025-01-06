@@ -27,7 +27,8 @@ end)
 
 Events.OnTickEvenPaused.Add(function()
     if emptyServerCalculate and emptyServerTickCount > 100 then
-        if getOnlinePlayers():size() == 0 then
+        local players = PR:onlinePlayers(true)
+        if players:size() == 0 then
             emptyServerCalculate = false
             print(PR.name .. ": Server is now empty")
             PR:clean()
@@ -40,7 +41,7 @@ Events.OnTickEvenPaused.Add(function()
 end)
 
 Events.EveryTenMinutes.Add(function()
-    emptyServerCalculate = getOnlinePlayers():size() > 0
+    emptyServerCalculate = PR:onlinePlayers(true):size() > 0
 end)
 
 function PR:serverSendUnregisters()

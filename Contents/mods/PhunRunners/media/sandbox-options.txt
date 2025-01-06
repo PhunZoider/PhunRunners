@@ -18,6 +18,14 @@ option PhunRunners.PhunRunnersVolume
     translation = PhunRunners_Volume,
 }
 
+option PhunRunners.ShowMoodleOnlyWhenRunning
+{ 
+    type = boolean, 
+    default = true,
+    page = PhunRunners, 
+    translation = PhunRunners_ShowMoodleOnlyWhenRunning,
+}
+
 option PhunRunners.TickRate
 { 
     type = integer, 

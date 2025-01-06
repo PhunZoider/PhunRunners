@@ -52,18 +52,22 @@ local riskLevelNames = {"None", "Low", "Moderate", "High", "Extreme"}
 function PR.moodles:update(player, data)
 
     local moodle = self:get(player)
-    if not moodle or not PR.settings.ShowMoodle then
+    if not moodle or not PR.settings.ShowMoodle and not PR.settings.ShowMoodleOnlyWhenRunning then
         if moodle then
-            moodle.disable = true
+            moodle:setValue(2)
         end
-        return
+        if not isAdmin() and not isDebugEnabled() then
+            return
+        end
     end
 
     local pd = data or player:getModData().PhunRunners or {}
 
-    if not pd.spawnSprinters and not isAdmin() then
-        moodle.disable = false
-        return
+    if not pd.restless and not isAdmin() and not PR.settings.ShowMoodleOnlyWhenRunning then
+        moodle:setValue(2)
+        if not isAdmin() and not isDebugEnabled() then
+            return
+        end
     end
 
     local value = 1 - (data.risk * .01)
@@ -103,24 +107,27 @@ function PR.moodles:update(player, data)
         end
     end
 
-    if isAdmin() then
-        table.insert(texts, "Light: " .. tostring(pd.env.value) .. "%")
-
-        table.insert(texts, "Difficulty: " .. tostring(pd.difficulty))
+    if isAdmin() or isDebugEnabled() then
+        table.insert(texts, "Attributes")
         table.insert(texts, "Char Hours: " .. formatNumber(pd.hours or 0))
         table.insert(texts, "Total Hours: " .. formatNumber(pd.totalHours or 0))
         table.insert(texts, "Total Kills: " .. tostring(pd.totalKills or 0))
         table.insert(texts, "Sprinter Kills: " .. tostring(pd.totalSprinters or 0))
         table.insert(texts, "Grace: " .. tostring(pd.grace))
+        table.insert(texts, "Sprinters Killed: " .. tostring(pd.sprinterKillRisk) .. "%")
+        table.insert(texts, "Timer: " .. tostring(pd.timerRisk) .. "%")
+        table.insert(texts, "-----")
+        table.insert(texts, "Env")
+        table.insert(texts, "Difficulty: " .. tostring(pd.difficulty))
+        table.insert(texts, "Value: " .. tostring(pd.env.value) .. "%")
+        table.insert(texts, "Moon Multiplier: " .. tostring(pd.moonMultiplier) .. "%")
         table.insert(texts, "Modifier: " .. tostring(pd.modifier) .. "%")
         table.insert(texts, "Fog1: " .. tostring(pd.env.fog) .. "%")
         table.insert(texts, "Light: " .. tostring(pd.env.light) .. "%")
-        table.insert(texts, "Moon Multiplier: " .. tostring(pd.moonMultiplier) .. "%")
-        table.insert(texts, "Value: " .. tostring(pd.env.value) .. "%")
-        table.insert(texts, "Restless: " .. tostring(pd.spawnSprinters))
+        table.insert(texts, "-----")
+        table.insert(texts, "Spawning mode")
+        table.insert(texts, "Restless: " .. tostring(pd.restless))
         table.insert(texts, "Spawn Sprinters: " .. tostring(pd.spawnSprinters))
-        table.insert(texts, "Sprinters Killed: " .. tostring(pd.sprinterKillRisk) .. "%")
-        table.insert(texts, "Timer: " .. tostring(pd.timerRisk) .. "%")
     end
 
     local chevys = 0

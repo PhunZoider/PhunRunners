@@ -107,7 +107,7 @@ function PR:updateZed(zed)
     end
 
     -- throttle checks. First time will pass because its nil
-    if zData.tick ~= nil and zData.tick < tickRate then
+    if zData.tick ~= nil and zData.tick < self.settings.TickRate then
         zData.tick = zData.tick + 1
         return
     end
@@ -181,13 +181,13 @@ function PR:getEnvironment(refresh)
 end
 
 function PR:showWidgets()
-    for i = 0, getOnlinePlayers():size() - 1 do
-        local p = getOnlinePlayers():get(i)
-        if p:isLocalPlayer() then
-            if not self.settings.ShowMoodle then
-                self:showWidget(p)
-            end
+    local players = self:onlinePlayers(true)
+    for i = 0, players:size() - 1 do
+        local p = players:get(i)
+        if not self.settings.ShowMoodle then
+            self:showWidget(p)
         end
+
     end
 end
 
@@ -280,7 +280,14 @@ function PR:updatePlayer(playerObj, zone)
     if not zone and PhunZones then
         zone = modData.PhunZones or PhunZones:getPlayerData(playerObj)
     end
-    local pstats = PhunStats and PhunStats:getData(name)
+    local pstats = PhunStats and PhunStats:getData(name) or {
+        current = {
+            hours = playerObj:getHoursSurvived() or 0
+        },
+        total = {
+            hours = playerObj:getHoursSurvived() or 0
+        }
+    }
 
     local zoneDifficulty = zone.difficulty or 1
     local charHours = pstats.current.hours or 0
@@ -361,6 +368,7 @@ function PR:updatePlayer(playerObj, zone)
     end
 
     local oldSpawnSprinters = playerData.spawnSprinters
+    local oldRestless = playerData.restless
     local oldRisk = playerData.risk
 
     local zoneChanged = false
@@ -377,8 +385,8 @@ function PR:updatePlayer(playerObj, zone)
     self.players[name] = pd
     modData.PhunRunners = pd
 
-    if pd.spawnSprinters ~= oldSpawnSprinters then
-        if pd.spawnSprinters then
+    if pd.restless ~= oldRestless then
+        if pd.restless then
             print("Player ", name, " is now spawning sprinters")
             triggerEvent(PR.events.OnPlayerStartSpawningSprinters, playerObj)
             self:startSprintersSound(playerObj)
@@ -426,10 +434,10 @@ function PR:getPlayerData(playerObj)
 end
 
 function PR:updatePlayers()
-    for i = 1, getOnlinePlayers():size() do
-        local p = getOnlinePlayers():get(i - 1)
-        if p:isLocalPlayer() then
-            self:updatePlayer(p)
-        end
+    local players = self:onlinePlayers(true)
+    for i = 1, players:size() do
+        local p = players:get(i - 1)
+        self:updatePlayer(p)
+
     end
 end
