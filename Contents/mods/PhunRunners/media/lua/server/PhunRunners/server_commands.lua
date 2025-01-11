@@ -13,4 +13,8 @@ Commands[PR.commands.unregisterSprinter] = function(playerObj, arguments)
     PR:unregisterSprinter(arguments.id)
 end
 
+Commands[PR.commands.requestState] = function(playerObj, arguments)
+    sendServerCommand(playerObj, PR.name, PR.commands.stateChange, PR.env)
+end
+
 return Commands

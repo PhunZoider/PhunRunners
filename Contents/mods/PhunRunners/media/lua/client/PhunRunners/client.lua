@@ -136,49 +136,49 @@ function PR:updateZed(zed)
 
 end
 
-function PR:caclculateEnv()
+-- function PR:caclculateEnv()
 
-    local climate = getClimateManager()
+--     local climate = getClimateManager()
 
-    local lastAdjustedLightIntensity = self.env and self.env.value or 0
-    local lastMoon = self.env and self.env.moon or 0
+--     local lastAdjustedLightIntensity = self.env and self.env.value or 0
+--     local lastMoon = self.env and self.env.moon or 0
 
-    -- get daylight intensity
-    local lightIntensity = math.max(0, math.floor((climate:getDayLightStrength() * 100) + 0.5))
-    -- get fog intensity
-    local fogIntensity = math.floor((climate:getFogIntensity() * 100) + 0.5)
+--     -- get daylight intensity
+--     local lightIntensity = math.max(0, math.floor((climate:getDayLightStrength() * 100) + 0.5))
+--     -- get fog intensity
+--     local fogIntensity = math.floor((climate:getFogIntensity() * 100) + 0.5)
 
-    -- adjust daylight intensity by fog intensity
-    local adjustedLightIntensity = lightIntensity;
-    if fogIntensity > 0 then
-        -- TODO: Why recalc this?
-        adjustedLightIntensity = math.max(0, lightIntensity - (lightIntensity * climate:getFogIntensity()))
-    end
+--     -- adjust daylight intensity by fog intensity
+--     local adjustedLightIntensity = lightIntensity;
+--     if fogIntensity > 0 then
+--         -- TODO: Why recalc this?
+--         adjustedLightIntensity = math.max(0, lightIntensity - (lightIntensity * climate:getFogIntensity()))
+--     end
 
-    self.env = {
-        value = adjustedLightIntensity,
-        light = lightIntensity,
-        fog = fogIntensity,
-        moon = getClimateMoon():getCurrentMoonPhase()
-    }
+--     self.env = {
+--         value = adjustedLightIntensity,
+--         light = lightIntensity,
+--         fog = fogIntensity,
+--         moon = getClimateMoon():getCurrentMoonPhase()
+--     }
 
-    if lastAdjustedLightIntensity ~= adjustedLightIntensity or lastMoon ~= self.env.moon then
-        PR:updatePlayers()
-    end
+--     if lastAdjustedLightIntensity ~= adjustedLightIntensity or lastMoon ~= self.env.moon then
+--         PR:updatePlayers()
+--     end
 
-    return self.env
-end
+--     return self.env
+-- end
 
 -- Will return a cache of the env if refresh is not true
-function PR:getEnvironment(refresh)
+-- function PR:getEnvironment(refresh)
 
-    if not refresh and self.env then
-        return self.env
-    else
-        return self:caclculateEnv()
-    end
+--     if not refresh and self.env then
+--         return self.env
+--     else
+--         return self:caclculateEnv()
+--     end
 
-end
+-- end
 
 function PR:showWidgets()
     local players = self:onlinePlayers(true)
@@ -275,7 +275,7 @@ function PR:updatePlayer(playerObj, zone)
         modData.PhunRunners = {}
     end
     local playerData = self:getPlayerData(playerObj)
-    local env = self:getEnvironment()
+    local env = self.env
 
     if not zone and PhunZones then
         zone = modData.PhunZones or PhunZones:getPlayerData(playerObj)

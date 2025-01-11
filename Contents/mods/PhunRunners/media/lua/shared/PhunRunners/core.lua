@@ -6,8 +6,11 @@ PhunRunners = {
     commands = {
         createSprinter = "PhunRunnersCreateSprinter",
         registerSprinter = "PhunRunnersRegisterSprinter",
-        unregisterSprinter = "PhunRunnersUnregisterSprinter"
+        unregisterSprinter = "PhunRunnersUnregisterSprinter",
+        stateChange = "PhunRunnersStateChange",
+        requestState = "PhunRunnersRequestState"
     },
+    env = {},
     ui = {},
     players = {},
     data = {},

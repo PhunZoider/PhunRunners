@@ -38,20 +38,21 @@ end
 local function setup()
     Events.OnTick.Remove(setup)
     PR:ini()
+    sendClientCommand(PR.name, PR.commands.requestState)
     ModData.request(PR.name)
     PR:caclculateEnv()
     PR:recalcOutfits()
     PR:showWidgets()
 
-    local nextCheck = 0
-    local every = PR.settings.FrequencyOfEnvUpdate
-    local getTimestamp = getTimestamp
-    Events.OnTick.Add(function()
-        if getTimestamp() >= nextCheck then
-            nextCheck = getTimestamp() + every
-            PR:caclculateEnv()
-        end
-    end)
+    -- local nextCheck = 0
+    -- local every = PR.settings.FrequencyOfEnvUpdate
+    -- local getTimestamp = getTimestamp
+    -- Events.OnTick.Add(function()
+    --     if getTimestamp() >= nextCheck then
+    --         nextCheck = getTimestamp() + every
+    --         PR:caclculateEnv()
+    --     end
+    -- end)
 end
 
 Events.EveryTenMinutes.Add(function()

@@ -23,4 +23,9 @@ Commands[PR.commands.unregisterSprinter] = function(arguments)
     end
 end
 
+Commands[PR.commands.stateChange] = function(arguments)
+    PR.env = arguments
+    PR:updatePlayers()
+end
+
 return Commands

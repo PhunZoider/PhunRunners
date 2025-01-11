@@ -128,3 +128,13 @@ option PhunRunners.FrequencyOfEnvUpdate
     page=PhunRunners,
     translation=PhunRunners_FrequencyOfEnvUpdate,
 }
+
+option PhunRunners.UpdateInterval
+{ 
+    type = integer, 
+    default = 1, 
+    min = 1,
+    max = 1000,
+    page = PhunRunners, 
+    translation = PhuNRunners_UpdateInterval,
+}

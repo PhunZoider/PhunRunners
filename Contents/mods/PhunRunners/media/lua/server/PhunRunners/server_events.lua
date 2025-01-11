@@ -44,23 +44,22 @@ Events.EveryTenMinutes.Add(function()
     emptyServerCalculate = PR:onlinePlayers(true):size() > 0
 end)
 
-function PR:serverSendUnregisters()
-    -- local seconds = PR.settings.DeferUnregisterSeconds
-    -- if seconds and seconds > 0 then
-    --     Delay:set(seconds, function()
-    --         if #PR.toUnregister > 0 then
-    --             sendServerCommand(self.name, self.commands.unregisterSprinter, {
-    --                 ids = PR.toUnregister
-    --             })
-    --         end
-    --         PR:serverSendUnregisters()
-    --     end, "transmitUnregisters")
-    -- end
-end
-
 local function setup()
     Events.OnTick.Remove(setup)
     -- PhunRunners:serverSendUnregisters()
 end
 
 Events.OnTick.Add(setup)
+
+Events[PhunZones.events.OnPhunZoneReady].Add(function(playerObj, zone)
+
+    local nextCheck = 0
+
+    Events.OnTick.Add(function()
+        if getTimestamp() >= nextCheck then
+            nextCheck = getTimestamp() + (PR.settings.updateInterval or 2)
+            PR:updateEnv()
+        end
+    end)
+
+end)
