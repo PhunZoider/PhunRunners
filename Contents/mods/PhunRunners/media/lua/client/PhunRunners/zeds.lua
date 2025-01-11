@@ -22,7 +22,7 @@ function PR:getZedData(zed)
     end
 
     local id = self:getId(zed)
-    local reg = self.data and self.data[id]
+    -- local reg = self.data and self.data[id]
 
     if data.PhunRunners == nil or data.PhunRunners.id ~= id or (data.PhunRunners.sprinter and reg == nil) then
         -- zed is not registered or it is being reused
@@ -33,10 +33,10 @@ function PR:getZedData(zed)
 
     local zData = data.PhunRunners
 
-    if reg then
-        -- in registry as a sprinter
-        zData.sprinter = true
-    end
+    -- if reg then
+    --     -- in registry as a sprinter
+    --     zData.sprinter = true
+    -- end
 
     return zData
 
@@ -126,7 +126,7 @@ function PR:testPlayers(zed, zData)
                 end
 
                 if zData.sprinter and zed:getTarget() == p then
-                    if pData.restless then
+                    if pData.spawnSprinters then
                         self:adjustForLight(zed, zData, p)
                     elseif zData.sprinting then
                         self:normalSpeed(zed)
@@ -192,7 +192,7 @@ end
 function PR:scream(zed, zData)
 
     zData.screamed = true
-    local soundName = "PhunRunners_" .. ZombRand(1, 5)
+    local soundName = "PhunRunners_" .. ZombRand(5) + 1
     if not zed:getEmitter():isPlaying(soundName) then
         local vol = self.settings.PhunRunnersSprinterVolume or 25 * .01
         local soundEmitter = getWorld():getFreeEmitter()

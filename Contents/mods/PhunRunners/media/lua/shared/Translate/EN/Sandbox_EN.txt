@@ -4,8 +4,14 @@ Sandbox_EN = {
     Sandbox_PhunRunners_ShowMoodle = "Use Moodle"
     Sandbox_PhunRunners_ShowMoodle_tooltip = "Show a moodle instead of the pips"
 
+    Sandbox_PhunRunners_ShowMoodleOnlyWhenRunning = "Dont always show"
+    Sandbox_PhunRunners_ShowMoodleOnlyWhenRunning_tooltip = "Only show moodle when sprinters can spawn"
+
     Sandbox_PhunRunners_Volume = "Percentage Sprinters Volume"
     Sandbox_PhunRunners_Volume_tooltip = "Volume of sprinter screech"
+
+    Sandbox_PhunRunners_SprinterVolume = "Percentage Sprinters Volume"
+    Sandbox_PhunRunners_SprinterVolume_tooltip = "Volume of sprinter screech"
 
     Sandbox_PhunRunners_TickRate = "Tick Rate"
     Sandbox_PhunRunners_TickRate_tooltip = "Number of game ticks to defer between processing zed updates. A higher number can increase performance"
@@ -33,9 +39,6 @@ Sandbox_EN = {
 
     Sandbox_PhunRunners_GraceHours = "Grace for character"
     Sandbox_PhunRunners_GraceHours_tooltip = "Number of hours a new character has before they start spawning sprinters"
-
-    Sandbox_PhunRunners_DeferUnregisterSeconds = "Unregister Sprinters Frequency"
-    Sandbox_PhunRunners_DeferUnregisterSeconds_tooltip = "Number of seconds between unregistering unused sprinters"
 
     Sandbox_PhunRunners_FrequencyOfEnvUpdate = "Env Checks"
     Sandbox_PhunRunners_FrequencyOfEnvUpdate_tooltip = "Number of seconds before recalculating enviromental changes like light and fog. Increase for improved performance"

@@ -63,7 +63,7 @@ function PR.moodles:update(player, data)
 
     local pd = data or player:getModData().PhunRunners or {}
 
-    if not pd.restless and not isAdmin() and not PR.settings.ShowMoodleOnlyWhenRunning then
+    if not pd.spawnSprinters and not isAdmin() and not PR.settings.ShowMoodleOnlyWhenRunning then
         moodle:setValue(2)
         if not isAdmin() and not isDebugEnabled() then
             return
@@ -126,7 +126,7 @@ function PR.moodles:update(player, data)
         table.insert(texts, "Light: " .. tostring(pd.env.light) .. "%")
         table.insert(texts, "-----")
         table.insert(texts, "Spawning mode")
-        table.insert(texts, "Restless: " .. tostring(pd.restless))
+        -- table.insert(texts, "Restless: " .. tostring(pd.restless))
         table.insert(texts, "Spawn Sprinters: " .. tostring(pd.spawnSprinters))
     end
 

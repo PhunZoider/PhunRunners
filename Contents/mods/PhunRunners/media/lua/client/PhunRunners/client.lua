@@ -14,13 +14,13 @@ local diffText = {"min", "low", "moderate", "high", "extreme"}
 -- Trigger audio notification that sprinters will start running
 function PR:startSprintersSound(playerObj)
     local vol = (self.settings.PhunRunnersVolume or 15) * .01
-    getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(vol);
+    -- getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(vol);
 end
 
 -- Trigger audio notification that sprinters will stop running
 function PR:stopSprintersSound(playerObj)
     local vol = (self.settings.PhunRunnersVolume or 15) * .01
-    getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(vol);
+    -- getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(vol);
 end
 
 -- Make zed return to normal speed
@@ -279,6 +279,9 @@ function PR:updatePlayer(playerObj, zone)
 
     if not zone and PhunZones then
         zone = modData.PhunZones or PhunZones:getPlayerData(playerObj)
+        if not zone then
+            zone = PhunZones:updateModData(playerObj, true)
+        end
     end
     local pstats = PhunStats and PhunStats:getData(name) or {
         current = {
@@ -351,8 +354,9 @@ function PR:updatePlayer(playerObj, zone)
         risk = totalRisk,
         modifier = lightModifier,
         env = env,
+        -- lightModifier 0 = too bright, 100 = dark enough. In between = some are sprinting
         spawnSprinters = lightModifier > 0 and graceHours == 0 and totalRisk > 0,
-        restless = env.value > 30, -- ?
+        -- restless = lightModifier == 100, -- ?
         difficulty = zoneDifficulty,
         zoneRisk = zoneRisk,
         timerRisk = timerRisk,
@@ -363,12 +367,12 @@ function PR:updatePlayer(playerObj, zone)
 
     if zoneDifficulty == 0 or inGrace then
         pd.risk = 0
-        pd.restless = false
+        -- pd.restless = false
         pd.spawnSprinters = false
     end
 
     local oldSpawnSprinters = playerData.spawnSprinters
-    local oldRestless = playerData.restless
+    -- local oldRestless = playerData.restless
     local oldRisk = playerData.risk
 
     local zoneChanged = false
@@ -385,8 +389,8 @@ function PR:updatePlayer(playerObj, zone)
     self.players[name] = pd
     modData.PhunRunners = pd
 
-    if pd.restless ~= oldRestless then
-        if pd.restless then
+    if pd.spawnSprinters ~= oldSpawnSprinters then
+        if pd.spawnSprinters then
             print("Player ", name, " is now spawning sprinters")
             triggerEvent(PR.events.OnPlayerStartSpawningSprinters, playerObj)
             self:startSprintersSound(playerObj)

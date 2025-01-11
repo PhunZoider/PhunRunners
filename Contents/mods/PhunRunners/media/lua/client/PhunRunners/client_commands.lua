@@ -9,6 +9,10 @@ Commands[PR.commands.registerSprinter] = function(arguments)
     PR:registerSprinter(arguments.id, true)
 end
 
+Commands[PR.commands.registerSprinter] = function(arguments)
+    PR:registerSprinter(arguments.id, true)
+end
+
 Commands[PR.commands.unregisterSprinter] = function(arguments)
     if arguments.id then
         PR:unregisterSprinter(arguments.id, true)

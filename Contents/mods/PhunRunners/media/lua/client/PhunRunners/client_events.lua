@@ -54,7 +54,21 @@ local function setup()
     end)
 end
 
+Events.EveryTenMinutes.Add(function()
+    -- fallback for when env changes are not detected
+    PR:updatePlayers()
+end)
+
 Events.OnTick.Add(setup)
+
+Events.OnPreFillWorldObjectContextMenu.Add(function(playerObj, context, worldobjects)
+    if isAdmin() or isDebugEnabled() then
+        context:addOption("PhunRunners", worldobjects, function()
+            local p = playerObj and getSpecificPlayer(playerObj) or getPlayer()
+            PR.ui.widget.OnOpenPanel(p)
+        end)
+    end
+end);
 
 Events.OnDawn.Add(function()
     PR:recalcOutfits()
