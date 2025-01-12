@@ -10,7 +10,12 @@ PhunRunners = {
         stateChange = "PhunRunnersStateChange",
         requestState = "PhunRunnersRequestState"
     },
-    env = {},
+    env = {
+        risk = 0,
+        value = 0,
+        moon = 0,
+        run = false
+    },
     ui = {},
     players = {},
     data = {},
@@ -19,7 +24,8 @@ PhunRunners = {
         OnPlayerStartSpawningSprinters = "OnPhunRunnersPlayerStartSpawningSprinters",
         OnPlayerStopSpawningSprinters = "OnPhunRunnersPlayerStopSpawningSprinters",
         OnPlayerRiskUpdate = "OnPhunRunnersPlayerRiskUpdate",
-        OnPlayerEnvUpdate = "OnPhunRunnersPlayerEnvUpdate"
+        OnPlayerEnvUpdate = "OnPhunRunnersPlayerEnvUpdate",
+        OnReady = "OnPhunRunnersReady"
     },
     pendingRemovals = {},
     resetIds = {},
@@ -183,7 +189,7 @@ PhunRunners = {
 
 local Core = PhunRunners
 Core.settings = SandboxVars[Core.name] or {}
-
+Core.isLocal = not isClient() and not isServer() and not isCoopHost()
 for _, event in pairs(Core.events) do
     if not Events[event] then
         LuaEventManager.AddEvent(event)
@@ -219,9 +225,51 @@ function Core:ini()
         -- load existing data
         self.data = ModData.getOrCreate(self.name)
 
-        if isClient() then
-            -- ask for any exceptions
-            ModData.request(self.name)
+        if self.isLocal then
+            self:updateDawnDusk()
+            self:updateMoon()
+            self:updateEnv()
+        end
+    end
+end
+
+function Core:updateDawnDusk()
+    print("===========")
+    print("UPDATING DAWNDUSK")
+    print("===========")
+    print("UPDATING DAWNDUSK")
+    if getClimateManager and getClimateManager().getSeason then
+        local season = getClimateManager():getSeason()
+        if season and season.getDusk then
+            self.data.dawnTime = season:getDawn()
+            self.data.duskTime = season:getDusk()
+        else
+            print("CANNOT CALC SEASON")
+        end
+    else
+        print("CANNOT CALCULTATE DAWNDUSK")
+        if not getClimateManager then
+            print("NO CLIMATE MANAGER")
+        else
+            print("NO SEASON")
+        end
+    end
+end
+
+function Core:updateMoon()
+    print("===========")
+    print("UPDATING MOON")
+    print("===========")
+    local values = luautils.split(self.settings.TotalMoonModifier, ";")
+    self.data.moon = getClimateMoon():getCurrentMoonPhase()
+    local existing = self.data.moonMultiplier
+    self.data.moonMultiplier = (values[getClimateMoon():getCurrentMoonPhase() + 1] or 100) * .01
+    if existing ~= self.data.moonMultiplier then
+        ModData.add(self.name, self.data)
+        if isServer() then
+            ModData.transmit(self.name)
+        else
+            self:updatePlayers()
         end
     end
 end
@@ -237,32 +285,6 @@ function Core:getId(zedObj)
                 end
             end
         end
-    end
-end
-
-function Core:registerSprinter(zid, skipNotify)
-    if not self.data[zid] then
-        self.data[zid] = 1
-        if isClient() and not skipNotify then
-            local p = getPlayer()
-            -- tell server (and all other players) about this sprinter
-            sendClientCommand(p, self.name, self.commands.registerSprinter, {
-                id = zid
-            })
-        elseif isServer() then
-            -- tell others about this sprinter
-            sendServerCommand(self.name, self.commands.registerSprinter, {
-                id = zid
-            })
-        end
-    end
-end
-
-function Core:unregisterSprinter(zid)
-    if zid and self.data[zid] then
-        self.data[zid] = nil
-        -- TODO: What if this guy is still running around? If we see he is a skele, do we just re set him up to sprint?
-        -- table.insert(self.pendingRemovals, zid)
     end
 end
 

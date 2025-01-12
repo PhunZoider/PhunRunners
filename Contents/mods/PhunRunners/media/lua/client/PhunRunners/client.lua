@@ -14,13 +14,13 @@ local diffText = {"min", "low", "moderate", "high", "extreme"}
 -- Trigger audio notification that sprinters will start running
 function PR:startSprintersSound(playerObj)
     local vol = (self.settings.PhunRunnersVolume or 15) * .01
-    -- getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(vol);
+    getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(vol);
 end
 
 -- Trigger audio notification that sprinters will stop running
 function PR:stopSprintersSound(playerObj)
     local vol = (self.settings.PhunRunnersVolume or 15) * .01
-    -- getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(vol);
+    getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(vol);
 end
 
 -- Make zed return to normal speed
@@ -217,13 +217,7 @@ function PR:resetModifiers()
     modifiers.inied = false
 end
 
--- update local db with players risk shit
-function PR:updatePlayer(playerObj, zone)
-
-    if not playerObj or not playerObj:isLocalPlayer() then
-        return
-    end
-
+function PR:getModifiers()
     if not modifiers.inied then
 
         modifiers.inied = true
@@ -239,10 +233,6 @@ function PR:updatePlayer(playerObj, zone)
             },
             ["difficulty"] = {
                 setting = "TotalDifficultyModifier",
-                array = true
-            },
-            ["moon"] = {
-                setting = "TotalMoonModifier",
                 array = true
             }
         }
@@ -268,33 +258,40 @@ function PR:updatePlayer(playerObj, zone)
             end
         end
     end
+    return modifiers
+end
+
+-- update local db with players risk shit
+function PR:updatePlayer(playerObj, zone)
+
+    if not playerObj or not playerObj:isLocalPlayer() then
+        return
+    end
 
     local name = playerObj:getUsername()
     local modData = playerObj:getModData()
     if not modData.PhunRunners then
         modData.PhunRunners = {}
     end
+    local modifiers = self:getModifiers()
     local playerData = self:getPlayerData(playerObj)
-    local env = self.env
+    local env = self.data
+    zone = PhunZones:getPlayerData(name)
 
-    if not zone and PhunZones then
-        zone = modData.PhunZones or PhunZones:getPlayerData(playerObj)
-        if not zone then
-            zone = PhunZones:updateModData(playerObj, true)
-        end
-    end
+    local hoursSurvived = playerObj:getHoursSurvived()
     local pstats = PhunStats and PhunStats:getData(name) or {
         current = {
-            hours = playerObj:getHoursSurvived() or 0
+            hours = hoursSurvived or 0
         },
         total = {
-            hours = playerObj:getHoursSurvived() or 0
+            hours = hoursSurvived or 0
         }
     }
 
     local zoneDifficulty = zone.difficulty or 1
-    local charHours = pstats.current.hours or 0
-    local hours = pstats.total.hours or 0
+
+    local charHours = pstats.current.hours or hoursSurvived
+    local hours = pstats.total.hours or hoursSurvived
     local totalKills = pstats.total.zombieKills or 0
     local totalSprinters = pstats.total.sprinterKills or 0
 
@@ -304,12 +301,12 @@ function PR:updatePlayer(playerObj, zone)
     local sprinterKillRisk = 0
     local timerRisk = 0
 
-    local zoneRisk = modifiers and modifiers.difficulty and modifiers.difficulty[zoneDifficulty] or 0
-    local moonPhaseModifierValue = 100
+    local zoneRisk = modifiers.difficulty[zoneDifficulty + 1] or 0
     local lightModifier = 0
 
-    if modifiers and modifiers.hours then
-        for k, v in pairs(modifiers.hours) do
+    local mods = self:getModifiers()
+    if mods and mods.hours then
+        for k, v in pairs(mods.hours) do
             if hours > k then
                 timerRisk = v
                 break
@@ -317,8 +314,8 @@ function PR:updatePlayer(playerObj, zone)
         end
     end
 
-    if modifiers and modifiers.sprinters then
-        for k, v in pairs(modifiers.sprinters) do
+    if mods and mods.sprinters then
+        for k, v in pairs(mods.sprinters) do
             if totalSprinters >= k then
                 sprinterKillRisk = v
                 break
@@ -326,71 +323,49 @@ function PR:updatePlayer(playerObj, zone)
         end
     end
 
-    local mods = modifiers
-    local m = env.moon
-    moonPhaseModifierValue = (mods and mods.moon and mods.moon[m + 1] or 100) * .01
-    local totalRisk = math.min(100, (zoneRisk + timerRisk + sprinterKillRisk) * moonPhaseModifierValue)
-
-    if env.value > self.settings.SlowInLightLevel then
-        -- too bright for sprinters (green)
-        lightModifier = 0
-    elseif env.value < self.settings.DarknessLevel then
-        -- dark enough for sprinters (red)
-        lightModifier = 100
-    else
-        -- somewhere in between (yellow)
-        -- TODO: Alternatively, maybe just leave as warning. Don't need to particularly adjust speeds on this
-        lightModifier = ((self.settings.SlowInLightLevel - self.settings.DarknessLevel) /
-                            (env.value - self.settings.DarknessLevel)) * 100
-    end
+    local totalRisk = math.min(100, (zoneRisk + timerRisk + sprinterKillRisk) * (self.data.moonMultiplier or 1))
 
     local graceHours = math.max(0, math.max((gHours or 1) - charHours, (gTotalHours or 24) - hours))
     local pd = {
-        zone = zone,
         hours = charHours,
         totalHours = hours,
         totalKills = totalKills,
         totalSprinters = totalSprinters,
         risk = totalRisk,
-        modifier = lightModifier,
-        env = env,
-        -- lightModifier 0 = too bright, 100 = dark enough. In between = some are sprinting
-        spawnSprinters = lightModifier > 0 and graceHours == 0 and totalRisk > 0,
-        -- restless = lightModifier == 100, -- ?
+        -- spawnSprinters = self.data.dimness > 0 and graceHours == 0 and totalRisk > 0,
+        create = graceHours == 0 and totalRisk > 0,
+        run = self.data.run == true and graceHours == 0 and totalRisk > 0,
         difficulty = zoneDifficulty,
         zoneRisk = zoneRisk,
         timerRisk = timerRisk,
         sprinterKillRisk = sprinterKillRisk,
-        moonMultiplier = moonPhaseModifierValue,
         grace = graceHours
     }
 
     if zoneDifficulty == 0 or inGrace then
         pd.risk = 0
         -- pd.restless = false
-        pd.spawnSprinters = false
+        pd.run = false
+        pd.create = false
     end
 
-    local oldSpawnSprinters = playerData.spawnSprinters
-    -- local oldRestless = playerData.restless
+    local oldRun = playerData.run
     local oldRisk = playerData.risk
 
     local zoneChanged = false
     local moonChanged = false
+
     if playerData.zone then
         if playerData.zone.region ~= zone.region or playerData.zone.zone ~= zone.zone then
             zoneChanged = true
         end
     end
-    if modData.PhunRunners.env == nil or env.moon ~= modData.PhunRunners.env.moon then
-        moonChanged = true
-    end
 
     self.players[name] = pd
     modData.PhunRunners = pd
 
-    if pd.spawnSprinters ~= oldSpawnSprinters then
-        if pd.spawnSprinters then
+    if pd.run ~= oldRun then
+        if pd.run then
             print("Player ", name, " is now spawning sprinters")
             triggerEvent(PR.events.OnPlayerStartSpawningSprinters, playerObj)
             self:startSprintersSound(playerObj)
@@ -401,7 +376,7 @@ function PR:updatePlayer(playerObj, zone)
         end
     end
 
-    if pd.risk ~= oldRisk or zoneChanged or moonChanged or pd.spawnSprinters ~= oldSpawnSprinters then
+    if pd.risk ~= oldRisk or zoneChanged or pd.run ~= oldRun then
         if pd.risk ~= oldRisk then
             pd.oldRisk = oldRisk
             pd.riskChanged = getGameTime():getHoursSurvived()

@@ -35,12 +35,24 @@ if PhunStats then
     end)
 end
 
+Events.EveryOneMinute.Add(function()
+    PR.delta = getTimestamp()
+end)
+
+Events.OnCreatePlayer.Add(function(player)
+    if PR.isLocal then
+        PR:updateDawnDusk()
+        PR:updateMoon()
+        PR:updateEnv()
+    end
+end)
+
 local function setup()
     Events.OnTick.Remove(setup)
     PR:ini()
-    sendClientCommand(PR.name, PR.commands.requestState)
+    sendClientCommand(PR.name, PR.commands.requestState, {})
     ModData.request(PR.name)
-    PR:caclculateEnv()
+
     PR:recalcOutfits()
     PR:showWidgets()
 
@@ -53,12 +65,15 @@ local function setup()
     --         PR:caclculateEnv()
     --     end
     -- end)
-end
 
-Events.EveryTenMinutes.Add(function()
-    -- fallback for when env changes are not detected
-    PR:updatePlayers()
-end)
+    Events.EveryTenMinutes.Add(function()
+        -- fallback for when env changes are not detected
+        if PR.inied then
+            PR:updatePlayers()
+        end
+    end)
+
+end
 
 Events.OnTick.Add(setup)
 
@@ -80,13 +95,16 @@ Events.OnZombieUpdate.Add(function(zed)
 end);
 
 Events.OnZombieDead.Add(function(zed)
-    PR:unregisterSprinter(PR:getId(zed))
+    -- PR:unregisterSprinter(PR:getId(zed))
 end)
 
 Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
     if tableName == PR.name and type(tableData) == "table" then
         ModData.add(PR.name, tableData)
         PR.data = ModData.getOrCreate(PR.name)
+        -- PR:updateDawnDusk()
+        -- PR:updateMoon()
+        PR:updatePlayers()
     end
 end)
 

@@ -23,22 +23,21 @@ function PR:getZedData(zed)
 
     local id = self:getId(zed)
     -- local reg = self.data and self.data[id]
-
-    if data.PhunRunners == nil or data.PhunRunners.id ~= id or (data.PhunRunners.sprinter and reg == nil) then
+    if data.PhunRunners == nil or data.PhunRunners.id ~= id or ((data.PhunRunners.exp or 0) < (self.delta or 0)) then
         -- zed is not registered or it is being reused
+
+        if zed:isSkeleton() then
+            zed:setSkeleton(false)
+        end
+
         data.PhunRunners = {
+            exp = (self.delta or 0) + (self.settings.Exp or 300), -- dont test again for a good 5 mins or so
             id = id
         }
+
     end
 
-    local zData = data.PhunRunners
-
-    -- if reg then
-    --     -- in registry as a sprinter
-    --     zData.sprinter = true
-    -- end
-
-    return zData
+    return data.PhunRunners
 
 end
 
@@ -116,34 +115,34 @@ function PR:testPlayers(zed, zData)
     for i = 0, players:size() - 1 do
         local p = players:get(i)
         if p:isLocalPlayer() then
-            local distance = getDistance(zed:getX(), zed:getY(), p:getX(), p:getY())
-            if distance < 50 then
-                isVisible = true
-                local pData = self:getPlayerData(p)
+            -- local distance = getDistance(zed:getX(), zed:getY(), p:getX(), p:getY())
+            -- if distance < 50 then
+            isVisible = true
+            local pData = self:getPlayerData(p)
 
-                if zData.sprinter == nil then
-                    self:shouldSprint(zed, zData, pData)
-                end
+            if zData.sprinter == nil then
+                self:shouldSprint(zed, zData, pData)
+            end
 
-                if zData.sprinter and zed:getTarget() == p then
-                    if pData.spawnSprinters then
-                        self:adjustForLight(zed, zData, p)
-                    elseif zData.sprinting then
-                        self:normalSpeed(zed)
-                    end
-                end
-            elseif zData and self.resetIds[zData.id or "nope"] then
-                -- TODO: Undecorate
-                self.resetIds[zData.id] = nil
-                if zed:isSkeleton() then
-                    zed:setSkeleton(false)
-                end
-                if zData.sprinting then
+            if zData.sprinter and zed:getTarget() == p then
+                if pData.run then
+                    self:adjustForLight(zed, zData, p)
+                elseif zData.sprinting then
                     self:normalSpeed(zed)
                 end
-                zed:getModData().PhunRunenrs = nil
-                return false
             end
+            -- elseif zData and self.resetIds[zData.id or "nope"] then
+            --     -- TODO: Undecorate
+            --     self.resetIds[zData.id] = nil
+            --     if zed:isSkeleton() then
+            --         zed:setSkeleton(false)
+            --     end
+            --     if zData.sprinting then
+            --         self:normalSpeed(zed)
+            --     end
+            --     zed:getModData().PhunRunenrs = nil
+            --     return false
+            -- end
         end
     end
 
@@ -156,17 +155,16 @@ function PR:shouldSprint(zed, zData, playerData)
 
     if playerData.risk > 0 then
         local risk = playerData.risk
-        if playerData.modifier ~= 0 then
-            -- adjust for modifier
-            if playerData.modifier > 100 then
-                playerData.modifier = 100
-            end
-            risk = risk * ((playerData.modifier or 0) * 0.01)
-        end
+        -- if playerData.modifier ~= 0 then
+        --     -- adjust for modifier
+        --     if playerData.modifier > 100 then
+        --         playerData.modifier = 100
+        --     end
+        --     risk = risk * ((playerData.modifier or 0) * 0.01)
+        -- end
 
         local rnd = ZombRand(100)
         if risk > 0 and rnd <= risk then
-            self:registerSprinter(zData.id)
             zData.sprinter = true
         end
     end
