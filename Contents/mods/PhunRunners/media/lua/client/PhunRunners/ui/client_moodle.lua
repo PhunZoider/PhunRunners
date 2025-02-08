@@ -61,7 +61,7 @@ local function getDescription(player)
             table.insert(texts, " - Fog density: " .. tostring(PR.data.fog) .. "%")
         end
     elseif PR.data.value <= PR.settings.SlowInLightLevel then
-        table.insert(texts, "Dim: " .. formatNumber(1 - PR.data.value) .. "%")
+        table.insert(texts, "Dim: " .. formatNumber(100 - PR.data.value) .. "%")
         if PR.data.fog > 0 then
             table.insert(texts, " - Light level: " .. formatNumber(PR.data.light) .. "%")
             table.insert(texts, " - Fog: " .. tostring(PR.data.fog) .. "%")

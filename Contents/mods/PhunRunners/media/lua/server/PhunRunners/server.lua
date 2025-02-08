@@ -28,7 +28,9 @@ function PR:updateEnv()
     self.data.value = adjustedLightIntensity
     self.data.light = lightIntensity
     self.data.fog = fogIntensity
-    self.data.run = time > (self.data.duskTime or 0) or time < (self.data.dawnTime or 0)
+
+    self.data.run = ((time > self.data.duskTime or 0) and adjustedLightIntensity < self.settings.SlowInLightLevel) or
+                        time < (self.data.dawnTime or 0)
     self.data.dimness = (self.settings.SlowInLightLevel - self.settings.DarknessLevel)
     local dimness = 0
     if adjustedLightIntensity <= self.settings.DarknessLevel then

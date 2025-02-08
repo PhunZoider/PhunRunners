@@ -119,7 +119,7 @@ function PR:updateZed(zed)
             -- TODO: use to reset zed?
             -- well, this is just for local players - so maybe not useful?
             -- Could maybe reset the scream?
-            return
+            -- return
         end
     end
 

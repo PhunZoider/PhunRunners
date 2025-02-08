@@ -192,7 +192,7 @@ function PR:scream(zed, zData)
     zData.screamed = true
     local soundName = "PhunRunners_" .. ZombRand(5) + 1
     if not zed:getEmitter():isPlaying(soundName) then
-        local vol = self.settings.PhunRunnersSprinterVolume or 25 * .01
+        local vol = (self.settings.PhunRunnersSprinterVolume) or 15 * .01
         local soundEmitter = getWorld():getFreeEmitter()
         local hnd = soundEmitter:playSound(soundName, zed:getX(), zed:getY(), zed:getZ())
         soundEmitter:setVolume(hnd, vol)
