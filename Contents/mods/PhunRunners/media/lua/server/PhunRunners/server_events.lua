@@ -53,7 +53,7 @@ Events[PhunZones.events.OnPhunZoneReady].Add(function(playerObj, zone)
 
     Events.OnTick.Add(function()
         if getTimestamp() >= nextCheck then
-            nextCheck = getTimestamp() + (PR.settings.updateInterval or 2)
+            nextCheck = getTimestamp() + (PR.settings.FrequencyOfEnvUpdate or 2)
             PR:updateEnv()
         end
     end)

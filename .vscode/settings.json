@@ -38,6 +38,16 @@
                 "match": ".*",
                 "cmd": "xcopy ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunRunners\\Contents\\mods\\PhunRunners /Y /I /E /F"
             },
+            // del pz41
+            {
+                "match": ".*",
+                "cmd": "rmdir /S /Q ${env.USERPROFILE}\\pz41\\mods\\PhunRunners 2>nul"
+            },
+            // copy dest to pz41
+            {
+                "match": ".*",
+                "cmd": "xcopy ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners ${env.USERPROFILE}\\pz41\\mods\\PhunRunners /Y /I /E /F /EXCLUDE:xclude"
+            },            
         ]
     },
     "editor.formatOnSave": true,

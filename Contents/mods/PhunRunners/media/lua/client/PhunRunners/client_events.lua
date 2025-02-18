@@ -60,10 +60,11 @@ local function setup()
     -- local every = PR.settings.FrequencyOfEnvUpdate
     -- local getTimestamp = getTimestamp
     -- Events.OnTick.Add(function()
-    --     if getTimestamp() >= nextCheck then
-    --         nextCheck = getTimestamp() + every
-    --         PR:caclculateEnv()
-    --     end
+    --     PR.tocked = true
+    --     -- if getTimestamp() >= nextCheck then
+    --     --     nextCheck = getTimestamp() + every
+    --     --     PR:caclculateEnv()
+    --     -- end
     -- end)
 
     Events.EveryTenMinutes.Add(function()

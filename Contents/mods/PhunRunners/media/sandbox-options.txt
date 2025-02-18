@@ -122,19 +122,17 @@ option PhunRunners.GraceHours
 option PhunRunners.FrequencyOfEnvUpdate
 {
     type = integer, 
-    default = 1, 
+    default = 2, 
     min = 0,
     max = 999,
     page=PhunRunners,
     translation=PhunRunners_FrequencyOfEnvUpdate,
 }
 
-option PhunRunners.UpdateInterval
+option PhunRunners.VersionKey
 { 
-    type = integer, 
-    default = 1, 
-    min = 1,
-    max = 1000,
-    page = PhunRunners, 
-    translation = PhuNRunners_UpdateInterval,
+    type = string,
+    default = PhunRunners,
+    page = PhunRunners,
+    translation = PhunRunners_VersionKey,
 }

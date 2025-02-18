@@ -114,12 +114,9 @@ function PR:updateZed(zed)
     zData.tick = 1
 
     if zData.sprinter ~= false then
-        if not self:testPlayers(zed, zData) then
+        if self:testPlayers(zed, zData) == false then
             -- out of sight of all players?
-            -- TODO: use to reset zed?
-            -- well, this is just for local players - so maybe not useful?
-            -- Could maybe reset the scream?
-            -- return
+            return
         end
     end
 
@@ -379,7 +376,7 @@ function PR:updatePlayer(playerObj, zone)
     if pd.risk ~= oldRisk or zoneChanged or pd.run ~= oldRun then
         if pd.risk ~= oldRisk then
             pd.oldRisk = oldRisk
-            pd.riskChanged = getGameTime():getHoursSurvived()
+            pd.riskChanged = getGameTime():getWorldAgeHours()
         end
         triggerEvent(PR.events.OnPlayerRiskUpdate, playerObj, pd)
 

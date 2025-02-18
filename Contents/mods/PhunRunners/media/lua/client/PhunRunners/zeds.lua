@@ -1,6 +1,7 @@
 if isServer() then
     return
 end
+local PL = PhunLib
 local PR = PhunRunners
 local slowInLightLevel = nil
 
@@ -23,21 +24,22 @@ function PR:getZedData(zed)
 
     local id = self:getId(zed)
     -- local reg = self.data and self.data[id]
-    if data.PhunRunners == nil or data.PhunRunners.id ~= id or ((data.PhunRunners.exp or 0) < (self.delta or 0)) then
+    if data[self.settings.VersionKey] == nil or data[self.settings.VersionKey].id ~= id or
+        ((data[self.settings.VersionKey].exp or 0) < (self.delta or 0)) then
         -- zed is not registered or it is being reused
 
         if zed:isSkeleton() then
             zed:setSkeleton(false)
         end
 
-        data.PhunRunners = {
+        data[self.settings.VersionKey] = {
             exp = (self.delta or 0) + (self.settings.Exp or 300), -- dont test again for a good 5 mins or so
             id = id
         }
 
     end
 
-    return data.PhunRunners
+    return data[self.settings.VersionKey]
 
 end
 
@@ -110,48 +112,45 @@ end
 
 function PR:testPlayers(zed, zData)
 
-    local isVisible = false
-    local players = self:onlinePlayers(true)
+    local players = PL.onlinePlayers()
     for i = 0, players:size() - 1 do
         local p = players:get(i)
-        if p:isLocalPlayer() then
-            -- local distance = getDistance(zed:getX(), zed:getY(), p:getX(), p:getY())
-            -- if distance < 50 then
-            isVisible = true
-            local pData = self:getPlayerData(p)
 
-            if zData.sprinter == nil then
-                self:shouldSprint(zed, zData, pData)
-            end
-
-            if zData.sprinter and zed:getTarget() == p then
-                if pData.run then
-                    self:adjustForLight(zed, zData, p)
-                elseif zData.sprinting then
-                    self:normalSpeed(zed)
-                end
-            end
-            -- elseif zData and self.resetIds[zData.id or "nope"] then
-            --     -- TODO: Undecorate
-            --     self.resetIds[zData.id] = nil
-            --     if zed:isSkeleton() then
-            --         zed:setSkeleton(false)
-            --     end
-            --     if zData.sprinting then
-            --         self:normalSpeed(zed)
-            --     end
-            --     zed:getModData().PhunRunenrs = nil
-            --     return false
-            -- end
+        local distance = getDistance(zed:getX(), zed:getY(), p:getX(), p:getY())
+        if distance > 50 then
+            return false
         end
-    end
+        local pData = self:getPlayerData(p)
 
-    return isVisible
+        if zData.sprinter == nil then
+            zData.sprinter = self:shouldSprint(zed, zData, pData)
+        end
+
+        if zData.sprinter and zed:getTarget() == p then
+            if pData.run then
+                self:adjustForLight(zed, zData, p)
+            elseif zData.sprinting then
+                self:normalSpeed(zed)
+            end
+        end
+        -- elseif zData and self.resetIds[zData.id or "nope"] then
+        --     -- TODO: Undecorate
+        --     self.resetIds[zData.id] = nil
+        --     if zed:isSkeleton() then
+        --         zed:setSkeleton(false)
+        --     end
+        --     if zData.sprinting then
+        --         self:normalSpeed(zed)
+        --     end
+        --     zed:getModData().PhunRunenrs = nil
+        --     return false
+        -- end
+
+    end
 
 end
 
 function PR:shouldSprint(zed, zData, playerData)
-    zData.sprinter = false
 
     if playerData.risk > 0 then
         local risk = playerData.risk
@@ -162,12 +161,9 @@ function PR:shouldSprint(zed, zData, playerData)
         --     end
         --     risk = risk * ((playerData.modifier or 0) * 0.01)
         -- end
-
-        local rnd = ZombRand(100)
-        if risk > 0 and rnd <= risk then
-            zData.sprinter = true
-        end
+        return risk > 0 and ZombRand(100) <= risk
     end
+    return false
 end
 
 function PR:adjustForLight(zed, zData, player)

@@ -43,4 +43,7 @@ Sandbox_EN = {
     Sandbox_PhunRunners_FrequencyOfEnvUpdate = "Env Checks"
     Sandbox_PhunRunners_FrequencyOfEnvUpdate_tooltip = "Number of seconds before recalculating enviromental changes like light and fog. Increase for improved performance"
 
+    Sandbox_PhunRunners_VersionKey = "Version Key"
+    Sandbox_PhunRunners_VersionKey_tooltip = "Used for debugging"
+
 }
