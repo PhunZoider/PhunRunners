@@ -2,9 +2,9 @@ if isClient() then
     return
 end
 
-local PR = PhunRunners
+local Core = PhunRunners
 
-function PR:updateEnv()
+function Core:updateEnv()
 
     local climate = getClimateManager()
 

@@ -3,10 +3,10 @@ if isServer() then
 end
 require "MF_ISMoodle"
 local mf = MF
-local PR = PhunRunners
-mf.createMoodle(PR.name)
+local Core = PhunRunners
+mf.createMoodle(Core.name)
 
-PR.moodles = {}
+Core.moodles = {}
 local inied = {}
 
 local chevrons = {
@@ -34,7 +34,7 @@ end
 local function getDescription(player)
     local pd = player:getModData().PhunRunners or {}
     local texts = {}
-    local modifiers = PR:getModifiers()
+    local modifiers = Core:getModifiers()
 
     table.insert(texts, getText("IGUI_PhunRunners_Risk_Percentage", formatNumber(pd.risk, true)))
     table.insert(texts,
@@ -44,27 +44,27 @@ local function getDescription(player)
         table.insert(texts, getText("IGUI_PhunRunners_Risk_Stats_Percentage",
             formatNumber(pd.timerRisk + pd.sprinterKillRisk)))
     end
-    local moon = (PR.data.moonMultiplier - 1) * 100
+    local moon = (Core.data.moonMultiplier - 1) * 100
     if moon > 0 then
         table.insert(texts,
-            getText("IGUI_PhunRunners_Risk_Moon_Percentage", getText("IGUI_PhunRunners_MoonPhase" .. PR.data.moon),
+            getText("IGUI_PhunRunners_Risk_Moon_Percentage", getText("IGUI_PhunRunners_MoonPhase" .. Core.data.moon),
                 formatNumber(moon)))
     end
     if pd.grace > 0 then
         table.insert(texts, getText("IGUI_PhunRunners_Grace_Remaining", formatNumber(pd.grace, true)))
     end
 
-    if PR.data.value <= PR.settings.DarknessLevel then
-        table.insert(texts, "Dark: " .. tostring(formatNumber(100 - PR.data.value)) .. "%")
-        if PR.data.fog > 0 then
-            table.insert(texts, " - Light level: " .. formatNumber(PR.data.light) .. "%")
-            table.insert(texts, " - Fog density: " .. tostring(PR.data.fog) .. "%")
+    if Core.data.value <= Core.settings.DarknessLevel then
+        table.insert(texts, "Dark: " .. tostring(formatNumber(100 - Core.data.value)) .. "%")
+        if Core.data.fog > 0 then
+            table.insert(texts, " - Light level: " .. formatNumber(Core.data.light) .. "%")
+            table.insert(texts, " - Fog density: " .. tostring(Core.data.fog) .. "%")
         end
-    elseif PR.data.value <= PR.settings.SlowInLightLevel then
-        table.insert(texts, "Dim: " .. formatNumber(100 - PR.data.value) .. "%")
-        if PR.data.fog > 0 then
-            table.insert(texts, " - Light level: " .. formatNumber(PR.data.light) .. "%")
-            table.insert(texts, " - Fog: " .. tostring(PR.data.fog) .. "%")
+    elseif Core.data.value <= Core.settings.SlowInLightLevel then
+        table.insert(texts, "Dim: " .. formatNumber(100 - Core.data.value) .. "%")
+        if Core.data.fog > 0 then
+            table.insert(texts, " - Light level: " .. formatNumber(Core.data.light) .. "%")
+            table.insert(texts, " - Fog: " .. tostring(Core.data.fog) .. "%")
 
         end
     end
@@ -81,20 +81,20 @@ local function getDescription(player)
         table.insert(texts, "-----")
         table.insert(texts, "Env")
         table.insert(texts, " - Area Difficulty: " .. tostring(pd.difficulty))
-        table.insert(texts, " - Value: " .. formatNumber(PR.data.value) .. "%")
-        table.insert(texts, " - Moon Phase: " .. tostring(PR.data.moon))
+        table.insert(texts, " - Value: " .. formatNumber(Core.data.value) .. "%")
+        table.insert(texts, " - Moon Phase: " .. tostring(Core.data.moon))
         table.insert(texts, " - Moon Multiplier: " .. tostring(pd.moonMultiplier) .. "%")
-        table.insert(texts, " - Light: " .. tostring(PR.data.light) .. "%")
-        table.insert(texts, " - Fog: " .. tostring(PR.data.fog) .. "%")
-        table.insert(texts, " - Dimness: " .. formatNumber(PR.data.dimness * 100) .. "%")
+        table.insert(texts, " - Light: " .. tostring(Core.data.light) .. "%")
+        table.insert(texts, " - Fog: " .. tostring(Core.data.fog) .. "%")
+        table.insert(texts, " - Dimness: " .. formatNumber(Core.data.dimness * 100) .. "%")
         table.insert(texts, "-----")
         table.insert(texts, "Spawning mode")
         table.insert(texts, " - create: " .. tostring(pd.create))
         table.insert(texts, " - run: " .. tostring(pd.run))
         table.insert(texts, "Settings")
-        table.insert(texts, " - Darkness Level: " .. tostring(PR.settings.DarknessLevel))
-        table.insert(texts, " - Slow In Light Level: " .. tostring(PR.settings.SlowInLightLevel))
-        local modifiers = PR:getModifiers()
+        table.insert(texts, " - Darkness Level: " .. tostring(Core.settings.DarknessLevel))
+        table.insert(texts, " - Slow In Light Level: " .. tostring(Core.settings.SlowInLightLevel))
+        local modifiers = Core:getModifiers()
         table.insert(texts, "Modifiers")
 
         -- hours
@@ -146,17 +146,6 @@ local function getDescription(player)
         table.insert(texts, difficultyLabel)
         table.insert(texts, "   - " .. table.concat(modifierTable, ", "))
 
-        -- local moonTable = {}
-        -- local moonLabel = " - Moon: "
-        -- for k, v in pairs(modifiers.moon) do
-        --     table.insert(moonTable, tostring(k) .. "=" .. tostring(v) .. (k == (PR.data.moon) and "*" or ""))
-        --     if PR.data.moon == k then
-        --         moonLabel = moonLabel .. " " .. tostring(k) .. "=" .. tostring(v) .. "%"
-        --     end
-        -- end
-        -- table.insert(texts, moonLabel)
-        -- table.insert(texts, "   - " .. table.concat(moonTable, ", "))
-
     end
 
     if pd.run then
@@ -168,9 +157,9 @@ local function getDescription(player)
     return #texts > 0 and table.concat(texts, "\n") or ""
 end
 
-function PR.moodles:get(player)
+function Core.moodles:get(player)
 
-    local moodle = mf.getMoodle(PR.name, player and player:getPlayerNum())
+    local moodle = mf.getMoodle(Core.name, player and player:getPlayerNum())
 
     if inied[tostring(player)] == nil then
         -- only show bad moodles
@@ -188,14 +177,14 @@ function PR.moodles:get(player)
     return moodle
 end
 
-function PR.moodles:update(player, data)
+function Core.moodles:update(player, data)
 
-    if not data or not PR.data then
+    if not data or not Core.data then
         return
     end
 
     local moodle = self:get(player)
-    if not moodle or not PR.settings.ShowMoodle and not PR.settings.ShowMoodleOnlyWhenRunning then
+    if not moodle or not Core.settings.ShowMoodle and not Core.settings.ShowMoodleOnlyWhenRunning then
         if moodle then
             moodle:setValue(2)
         end
@@ -207,7 +196,7 @@ function PR.moodles:update(player, data)
     local modData = player:getModData()
     local pd = data or modData.PhunRunners or {}
 
-    if not pd.run and not pd.create and not isAdmin() and not PR.settings.ShowMoodleOnlyWhenRunning then
+    if not pd.run and not pd.create and not isAdmin() and not Core.settings.ShowMoodleOnlyWhenRunning then
         moodle:setValue(2)
         if not isAdmin() and not isDebugEnabled() then
             return
@@ -246,50 +235,12 @@ function PR.moodles:update(player, data)
 
     inied[tostring(player)] = chevys
 
-    -- if data.rate then
-    --     if data.rate > 0 then
-    --         moodle:setChevronCount(data.rate)
-    --         moodle:setChevronIsUp(data.rate < 0)
-    --     elseif data.rate < 0 then
-    --         moodle:setChevronCount(math.abs(data.rate))
-    --         moodle:setChevronIsUp(true)
-    --     else
-    --         moodle:setChevronCount(0)
-    --     end
-    -- else
-    --     moodle:setChevronCount(0)
-    -- end
-    -- local tbl = {}
-    -- if pd.iodineExp then
-    --     table.insert(tbl, getText("IGUI_PhunRad_IodineStrength", PR.settings.IodineStrength))
-    --     local expin = pd.iodineExp - math.floor(getGameTime():getWorldAgeHours() + 0.005)
-    --     if expin < 0 then
-    --         table.insert(tbl, getText("IGUI_PhunRad_IodineExpiresSoon"))
-    --     elseif expin < 2 then
-    --         table.insert(tbl, getText("IGUI_PhunRad_IodineExpiresInAnHour"))
-    --     else
-    --         table.insert(tbl, getText("IGUI_PhunRad_IodineExpiresInXHours", expin))
-    --     end
-    -- end
-    -- if data.activeGeiger then
-    --     table.insert(tbl, getText("IGUI_PhunRad_YourRadiation", formatNumber(pd.rads)))
-    -- end
-    -- if data.itemRads then
-    --     table.insert(tbl, getText("IGUI_PhunRad_ItemRadiation", formatNumber(data.itemRads)))
-    -- end
-    -- if (#(data.clothingProtectionItems or {})) > 0 then
-    --     table.insert(tbl, getText("IGUI_PhunRad_ClothingProtection", formatNumber(data.clothingProtection)))
-    -- end
-    -- for _, v in ipairs(data.clothingProtectionItems or {}) do
-    --     table.insert(tbl, tostring(v.name) .. ": " .. tostring(v.protection))
-    -- end
     if modData.PhunZones.subtitle then
         moodle:setTitle(moodle:getGoodBadNeutral(), moodle:getLevel(),
             modData.PhunZones.title .. " - " .. modData.PhunZones.subtitle)
     else
         moodle:setTitle(moodle:getGoodBadNeutral(), moodle:getLevel(), modData.PhunZones.title)
     end
-    -- moodle:setDescription(moodle:getGoodBadNeutral(), moodle:getLevel(), #texts > 0 and table.concat(texts, "\n") or "")
 
 end
 

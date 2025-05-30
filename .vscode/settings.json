@@ -2,38 +2,52 @@
     "emeraldwalk.runonsave": {
         "autoClearConsole": true,
         "commands": [
+            // del dest
             {
                 "match": ".*",
                 "cmd": "rmdir /S /Q ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners 2>nul"
             },
+            // copy src to dest
             {
                 "match": ".*",
                 "cmd": "xcopy ${workspaceFolder}\\Contents\\mods ${env.USERPROFILE}\\Zomboid\\mods /Y /I /E /F /EXCLUDE:xclude"
             },
+            // copy src/media/* from dest to dest/42
             {
                 "match": ".*",
                 "cmd": "xcopy ${workspaceFolder}\\Contents\\mods\\PhunRunners\\media ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners\\42\\media /Y /I /E /F"
             },
+            // copy src/common to dest/common
             {
                 "match": ".*",
-                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunRunners\\mod.info ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners\\42\\mod.info /Y"
+                "cmd": "xcopy ${workspaceFolder}\\Contents\\mods\\PhunRunners\\common ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners\\common /Y /I /E /F"
             },
+            // copy src/mod.info to dest/42/mod.info
+            {
+                "match": ".*",
+                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunRunners\\42\\mod.info ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners\\42\\mod.info /Y"
+            },
+            // copy src/poster to dest/42/poster
             {
                 "match": ".*",
                 "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunRunners\\poster.png ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners\\42\\poster.png /Y"
             },
+            // copy src/icon to dest/42/icon
             {
                 "match": ".*",
                 "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunRunners\\icon.png ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners\\42\\icon.png /Y"
             },
+            // remove workshop/*
             {
                 "match": ".*",
                 "cmd": "rmdir /S /Q ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunRunners 2>nul"
             },
+            // copy src to workshop
             {
                 "match": ".*",
                 "cmd": "xcopy ${workspaceFolder} ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunRunners /Y /I /E /F /EXCLUDE:xclude"
             },
+            // copy dest to workshop
             {
                 "match": ".*",
                 "cmd": "xcopy ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunRunners\\Contents\\mods\\PhunRunners /Y /I /E /F"
@@ -47,7 +61,7 @@
             {
                 "match": ".*",
                 "cmd": "xcopy ${env.USERPROFILE}\\Zomboid\\mods\\PhunRunners ${env.USERPROFILE}\\pz41\\mods\\PhunRunners /Y /I /E /F /EXCLUDE:xclude"
-            },            
+            },          
         ]
     },
     "editor.formatOnSave": true,

@@ -1,30 +1,31 @@
 if isServer() then
     return
 end
-local PR = PhunRunners
+local Core = PhunRunners
 local PhunStats = PhunStats
 local PhunZones = PhunZones
+local PL = PhunLib
 local sandboxOptions = getSandboxOptions()
 local world = getWorld()
-local tickRate = PR.settings.TickRate or 20
+local tickRate = Core.settings.TickRate or 20
 local SPRINT = 1
 local NORMAL = 2
 local diffText = {"min", "low", "moderate", "high", "extreme"}
 
 -- Trigger audio notification that sprinters will start running
-function PR:startSprintersSound(playerObj)
+function Core:startSprintersSound(playerObj)
     local vol = (self.settings.PhunRunnersVolume or 15) * .01
     getSoundManager():PlaySound("PhunRunners_Start", false, 0):setVolume(vol);
 end
 
 -- Trigger audio notification that sprinters will stop running
-function PR:stopSprintersSound(playerObj)
+function Core:stopSprintersSound(playerObj)
     local vol = (self.settings.PhunRunnersVolume or 15) * .01
     getSoundManager():PlaySound("PhunRunners_End", false, 0):setVolume(vol);
 end
 
 -- Make zed return to normal speed
-function PR:normalSpeed(zed)
+function Core:normalSpeed(zed)
     zed:makeInactive(true);
     sandboxOptions:set("ZombieLore.Speed", NORMAL)
     zed:getModData().PhunRunners.sprinting = false
@@ -32,7 +33,7 @@ function PR:normalSpeed(zed)
 end
 
 -- Make zed run at sprint speed
-function PR:sprintSpeed(zed)
+function Core:sprintSpeed(zed)
     zed:makeInactive(true);
     sandboxOptions:set("ZombieLore.Speed", SPRINT)
     zed:getModData().PhunRunners.sprinting = true
@@ -41,7 +42,7 @@ function PR:sprintSpeed(zed)
 end
 
 -- configure any themed outfits
-function PR:recalcOutfits()
+function Core:recalcOutfits()
     local total = 0
     local month = getGameTime():getMonth()
     local day = getGameTime():getDay()
@@ -92,7 +93,7 @@ function PR:recalcOutfits()
 
 end
 
-function PR:updateZed(zed)
+function Core:updateZed(zed)
 
     local zData = self:getZedData(zed)
     if zData == nil then
@@ -133,52 +134,8 @@ function PR:updateZed(zed)
 
 end
 
--- function PR:caclculateEnv()
-
---     local climate = getClimateManager()
-
---     local lastAdjustedLightIntensity = self.env and self.env.value or 0
---     local lastMoon = self.env and self.env.moon or 0
-
---     -- get daylight intensity
---     local lightIntensity = math.max(0, math.floor((climate:getDayLightStrength() * 100) + 0.5))
---     -- get fog intensity
---     local fogIntensity = math.floor((climate:getFogIntensity() * 100) + 0.5)
-
---     -- adjust daylight intensity by fog intensity
---     local adjustedLightIntensity = lightIntensity;
---     if fogIntensity > 0 then
---         -- TODO: Why recalc this?
---         adjustedLightIntensity = math.max(0, lightIntensity - (lightIntensity * climate:getFogIntensity()))
---     end
-
---     self.env = {
---         value = adjustedLightIntensity,
---         light = lightIntensity,
---         fog = fogIntensity,
---         moon = getClimateMoon():getCurrentMoonPhase()
---     }
-
---     if lastAdjustedLightIntensity ~= adjustedLightIntensity or lastMoon ~= self.env.moon then
---         PR:updatePlayers()
---     end
-
---     return self.env
--- end
-
--- Will return a cache of the env if refresh is not true
--- function PR:getEnvironment(refresh)
-
---     if not refresh and self.env then
---         return self.env
---     else
---         return self:caclculateEnv()
---     end
-
--- end
-
-function PR:showWidgets()
-    local players = self:onlinePlayers(true)
+function Core:showWidgets()
+    local players = PL.onlinePlayers()
     for i = 0, players:size() - 1 do
         local p = players:get(i)
         if not self.settings.ShowMoodle then
@@ -188,11 +145,11 @@ function PR:showWidgets()
     end
 end
 
-function PR:showWidget(playerObj)
+function Core:showWidget(playerObj)
     self.ui.widget.OnOpenPanel(playerObj)
 end
 
-function PR:reloadWidget(playerObj)
+function Core:reloadWidget(playerObj)
     local w = self.ui.widget.instances[playerObj:getPlayerNum()]
     if w then
         w:close()
@@ -210,11 +167,11 @@ local modifiers = {
     moon = nil
 }
 
-function PR:resetModifiers()
+function Core:resetModifiers()
     modifiers.inied = false
 end
 
-function PR:getModifiers()
+function Core:getModifiers()
     if not modifiers.inied then
 
         modifiers.inied = true
@@ -259,7 +216,7 @@ function PR:getModifiers()
 end
 
 -- update local db with players risk shit
-function PR:updatePlayer(playerObj, zone)
+function Core:updatePlayer(playerObj, zone)
 
     if not playerObj or not playerObj:isLocalPlayer() then
         return
@@ -364,11 +321,11 @@ function PR:updatePlayer(playerObj, zone)
     if pd.run ~= oldRun then
         if pd.run then
             print("Player ", name, " is now spawning sprinters")
-            triggerEvent(PR.events.OnPlayerStartSpawningSprinters, playerObj)
+            triggerEvent(Core.events.OnPlayerStartSpawningSprinters, playerObj)
             self:startSprintersSound(playerObj)
         else
             print("Player ", name, " is no longer spawning sprinters")
-            triggerEvent(PR.events.OnPlayerStopSpawningSprinters, playerObj)
+            triggerEvent(Core.events.OnPlayerStopSpawningSprinters, playerObj)
             self:stopSprintersSound(playerObj)
         end
     end
@@ -378,15 +335,15 @@ function PR:updatePlayer(playerObj, zone)
             pd.oldRisk = oldRisk
             pd.riskChanged = getGameTime():getWorldAgeHours()
         end
-        triggerEvent(PR.events.OnPlayerRiskUpdate, playerObj, pd)
+        triggerEvent(Core.events.OnPlayerRiskUpdate, playerObj, pd)
 
     end
-    PR.moodles:update(playerObj, pd)
+    Core.moodles:update(playerObj, pd)
     return pd
 
 end
 
-function PR:getPlayerData(playerObj)
+function Core:getPlayerData(playerObj)
     local key = nil
     if type(playerObj) == "string" then
         key = playerObj
@@ -409,11 +366,10 @@ function PR:getPlayerData(playerObj)
     end
 end
 
-function PR:updatePlayers()
-    local players = self:onlinePlayers(true)
+function Core:updatePlayers()
+    local players = PL.onlinePlayers()
     for i = 1, players:size() do
         local p = players:get(i - 1)
         self:updatePlayer(p)
-
     end
 end

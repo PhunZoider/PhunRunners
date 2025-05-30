@@ -1,9 +1,8 @@
 if isServer() then
     return
 end
-local formatting = require("PhunRunners/formating")
-local PR = PhunRunners
-local PhunStats = PhunStats
+local formatting = PhunLib.strings
+local Core = PhunRunners
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
@@ -11,9 +10,9 @@ local FONT_SCALE = FONT_HGT_SMALL / 14
 local HEADER_HGT = FONT_HGT_MEDIUM + 2 * 2
 
 local profileName = "PhunRunnersWidgets"
-PR.ui.widget = ISCollapsableWindowJoypad:derive(profileName);
-PR.ui.widget.instances = {}
-local UI = PR.ui.widget
+Core.ui.widget = ISCollapsableWindowJoypad:derive(profileName);
+Core.ui.widget.instances = {}
+local UI = Core.ui.widget
 
 function UI.OnOpenPanel(playerObj, playerIndex)
 
@@ -72,22 +71,22 @@ function UI:render()
     table.insert(texts,
         (pz.region or "Unknown") .. " (" .. (pz.zone or "Unknown") .. ") - " .. (pz.difficulty or "Unknown"))
     table.insert(texts, "Risk: " .. tostring(data.risk) .. "%")
-    table.insert(texts, "Light: " .. tostring(PR.data.value) .. "%")
-    table.insert(texts, "Spawning: " .. tostring(PR.data.create))
-    table.insert(texts, "Running: " .. tostring(PR.data.run))
+    table.insert(texts, "Light: " .. tostring(Core.data.value) .. "%")
+    table.insert(texts, "Spawning: " .. tostring(Core.data.create))
+    table.insert(texts, "Running: " .. tostring(Core.data.run))
 
     table.insert(texts, "-----")
-    table.insert(texts, "Base Light: " .. tostring(PR.data.light) .. "%")
-    table.insert(texts, "Fog: " .. tostring(PR.data.fog) .. "%")
-    table.insert(texts, "Light: " .. tostring(PR.data.value) .. "%")
+    table.insert(texts, "Base Light: " .. tostring(Core.data.light) .. "%")
+    table.insert(texts, "Fog: " .. tostring(Core.data.fog) .. "%")
+    table.insert(texts, "Light: " .. tostring(Core.data.value) .. "%")
 
     table.insert(texts, "Modifier: " .. tostring(data.modifier) .. "%")
     table.insert(texts, "Moon Multiplier: " .. tostring(data.moonMultiplier) .. "%")
     table.insert(texts, "Risk: " .. tostring(data.risk) .. "%")
 
     table.insert(texts, "-----")
-    table.insert(texts, "Char Hours: " .. formatting:formatWholeNumber(data.hours or 0))
-    table.insert(texts, "Total Hours: " .. formatting:formatWholeNumber(data.totalHours or 0))
+    table.insert(texts, "Char Hours: " .. formatting.formatWholeNumber(data.hours or 0))
+    table.insert(texts, "Total Hours: " .. formatting.formatWholeNumber(data.totalHours or 0))
     table.insert(texts, "Total Kills: " .. tostring(data.totalKills or 0))
     table.insert(texts, "Sprinter Kills: " .. tostring(data.totalSprinters or 0))
     table.insert(texts, "Grace: " .. tostring(data.grace))

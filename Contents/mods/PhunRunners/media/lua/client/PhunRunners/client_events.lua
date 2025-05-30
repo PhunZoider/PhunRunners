@@ -2,9 +2,10 @@ if isServer() then
     return
 end
 local Commands = require("PhuNRunners/client_commands")
-local PR = PhunRunners
+local Core = PhunRunners
 local PhunZones = PhunZones
 local PhunStats = PhunStats
+local PL = PhunLib
 local iniedPhunStats = false
 local iniedPhunZones = false
 
@@ -14,63 +15,52 @@ if PhunZones then
         if not iniedPhunZones then
             iniedPhunZones = true
             if iniedPhunStats then
-                PR:updatePlayers()
+                Core:updatePlayers()
             end
         end
     end)
 
     Events[PZ.events.OnPhunZonesPlayerLocationChanged].Add(function(playerObj, zone)
-        PR:updatePlayer(playerObj, zone)
+        Core:updatePlayer(playerObj, zone)
     end)
 end
 
-if PhunStats then
-    Events[PhunStats.events.OnReady].Add(function()
-        if not iniedPhunStats then
-            iniedPhunStats = true
-            if iniedPhunZones then
-                PR:updatePlayers()
-            end
-        end
-    end)
-end
+-- if PhunStats then
+--     Events[PhunStats.events.OnReady].Add(function()
+--         if not iniedPhunStats then
+--             iniedPhunStats = true
+--             if iniedPhunZones then
+--                 Core:updatePlayers()
+--             end
+--         end
+--     end)
+-- end
 
 Events.EveryOneMinute.Add(function()
-    PR.delta = getTimestamp()
+    Core.delta = getTimestamp()
 end)
 
 Events.OnCreatePlayer.Add(function(player)
-    if PR.isLocal then
-        PR:updateDawnDusk()
-        PR:updateMoon()
-        PR:updateEnv()
+    if Core.isLocal then
+        Core:updateDawnDusk()
+        Core:updateMoon()
+        Core:updateEnv()
     end
 end)
 
 local function setup()
     Events.OnTick.Remove(setup)
-    PR:ini()
-    sendClientCommand(PR.name, PR.commands.requestState, {})
-    ModData.request(PR.name)
+    Core:ini()
+    sendClientCommand(Core.name, Core.commands.requestState, {})
+    ModData.request(Core.name)
 
-    PR:recalcOutfits()
-    PR:showWidgets()
-
-    -- local nextCheck = 0
-    -- local every = PR.settings.FrequencyOfEnvUpdate
-    -- local getTimestamp = getTimestamp
-    -- Events.OnTick.Add(function()
-    --     PR.tocked = true
-    --     -- if getTimestamp() >= nextCheck then
-    --     --     nextCheck = getTimestamp() + every
-    --     --     PR:caclculateEnv()
-    --     -- end
-    -- end)
+    Core:recalcOutfits()
+    Core:showWidgets()
 
     Events.EveryTenMinutes.Add(function()
         -- fallback for when env changes are not detected
-        if PR.inied then
-            PR:updatePlayers()
+        if Core.inied then
+            Core:updatePlayers()
         end
     end)
 
@@ -82,42 +72,35 @@ Events.OnPreFillWorldObjectContextMenu.Add(function(playerObj, context, worldobj
     if isAdmin() or isDebugEnabled() then
         context:addOption("PhunRunners", worldobjects, function()
             local p = playerObj and getSpecificPlayer(playerObj) or getPlayer()
-            PR.ui.widget.OnOpenPanel(p)
+            Core.ui.widget.OnOpenPanel(p)
         end)
     end
 end);
 
 Events.OnDawn.Add(function()
-    PR:recalcOutfits()
+    Core:recalcOutfits()
 end)
 
 Events.OnZombieUpdate.Add(function(zed)
-    PR:updateZed(zed)
+    Core:updateZed(zed)
 end);
 
-Events.OnZombieDead.Add(function(zed)
-    -- PR:unregisterSprinter(PR:getId(zed))
-end)
-
 Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
-    if tableName == PR.name and type(tableData) == "table" then
+    if tableName == Core.name and type(tableData) == "table" then
         ModData.add(PR.name, tableData)
-        PR.data = ModData.getOrCreate(PR.name)
-        -- PR:updateDawnDusk()
-        -- PR:updateMoon()
-        PR:updatePlayers()
+        Core.data = ModData.getOrCreate(Core.name)
+        Core:updatePlayers()
     end
 end)
 
 Events.OnServerCommand.Add(function(module, command, arguments)
-    if module == PR.name and Commands[command] then
+    if module == Core.name and Commands[command] then
         Commands[command](arguments)
     end
 end)
 
 Events.OnCharacterDeath.Add(function(playerObj)
     if instanceof(playerObj, "IsoZombie") then
-        -- zed died
 
         local data = playerObj:getModData()
         if data and data.brain then
@@ -127,28 +110,63 @@ Events.OnCharacterDeath.Add(function(playerObj)
 
         data = data and data.PhunRunners or {}
 
-        local player = playerObj:getAttackedBy()
-        if not player or not player:isLocalPlayer() then
-            return
-        end
-        local pdata = player:getModData()
-        if not pdata.PhunRunners then
-            pdata.PhunRunners = {}
-        end
+        -- zed died
+        local killer = playerObj:getAttackedBy()
+        if killer and instanceof(killer, "IsoPlayer") and killer:isLocalPlayer() then
+            local doRecord = false
+            local vehicle = killer and killer.getVehicle and killer:getVehicle()
+            if vehicle then
 
-        local vehicle = player and player.getVehicle and player:getVehicle()
-        if vehicle then
-            if vehicle:getDriver() == player then
+                if vehicle:getDriver() == killer then
+                    doRecord = true
+                end
+            else
+                doRecord = true
+
+            end
+
+            if doRecord then
+                local modData = killer:getModData()
+                if not modData.PhunRunners then
+                    modData.PhunRunners = {}
+                end
+                modData.PhunRunners.kills = (modData.PhunRunners.kills or 0) + 1
+                modData.PhunRunners.PhunRunners.totalKills = (modData.PhunRunners.totalKills or 0) + 1
                 if data and data.sprinting then
-                    triggerEvent(PR.events.OnSprinterDeath, playerObj, player, true)
+                    modData.PhunRunners.sprinterKills = (modData.PhunRunners.sprinterKills or 0) + 1
+                    modData.PhunRunners.totalSprinterKills = (modData.PhunRunners.totalSprinterKills or 0) + 1
+                    triggerEvent(Core.events.OnSprinterDeath, playerObj, killer, true)
                 end
             end
-        else
-            if data and data.sprinting then
-                triggerEvent(PR.events.OnSprinterDeath, playerObj, player)
-            end
-        end
 
+        end
+    elseif instanceof(playerObj, "IsoPlayer") then
+        -- player died
+        if playerObj:isLocalPlayer() then
+            local modData = playerObj:getModData()
+            if not modData.PhunRunners then
+                modData.PhunRunners = {}
+            end
+            modData.PhunRunners.deaths = (modData.PhunRunners.deaths or 0) + 1
+            modData.PhunRunners.PhunRunners.totalDeaths = (modData.PhunRunners.PhunRunners.totalDeaths or 0) + 1
+            modData.PhunRunners.totalHours = (modData.PhunRunners.totalHours or 0) + playerObj:getHoursSurvived()
+            modData.PhunRunners.hours = 0
+        end
+    end
+
+end)
+
+Events.EveryTenMinutes.Add(function()
+
+    local players = PL.onlinePlayers()
+    for i = 0, players:size() - 1 do
+        local playerObj = players:get(i)
+
+        local modData = playerObj:getModData()
+        if not modData.PhunRunners then
+            modData.PhunRunners = {}
+        end
+        modData.PhunRunners.hours = playerObj:getHoursSurvived()
     end
 
 end)

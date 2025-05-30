@@ -2,14 +2,14 @@ if isServer() then
     return
 end
 local PL = PhunLib
-local PR = PhunRunners
+local Core = PhunRunners
 local slowInLightLevel = nil
 
 local function getDistance(fromX, fromY, toX, toY)
     return math.sqrt((math.abs(fromX - toX)) ^ 2 + (math.abs(fromY - toY)) ^ 2)
 end
 
-function PR:getZedData(zed)
+function Core:getZedData(zed)
 
     if zed:isDead() then
         return
@@ -43,7 +43,7 @@ function PR:getZedData(zed)
 
 end
 
-function PR:decorateZed(zed)
+function Core:decorateZed(zed)
 
     local visual = zed:getItemVisuals()
     local outfits = self.outfit
@@ -110,7 +110,7 @@ function PR:decorateZed(zed)
 
 end
 
-function PR:testPlayers(zed, zData)
+function Core:testPlayers(zed, zData)
 
     local players = PL.onlinePlayers()
     for i = 0, players:size() - 1 do
@@ -133,40 +133,21 @@ function PR:testPlayers(zed, zData)
                 self:normalSpeed(zed)
             end
         end
-        -- elseif zData and self.resetIds[zData.id or "nope"] then
-        --     -- TODO: Undecorate
-        --     self.resetIds[zData.id] = nil
-        --     if zed:isSkeleton() then
-        --         zed:setSkeleton(false)
-        --     end
-        --     if zData.sprinting then
-        --         self:normalSpeed(zed)
-        --     end
-        --     zed:getModData().PhunRunenrs = nil
-        --     return false
-        -- end
 
     end
 
 end
 
-function PR:shouldSprint(zed, zData, playerData)
+function Core:shouldSprint(zed, zData, playerData)
 
     if playerData.risk > 0 then
         local risk = playerData.risk
-        -- if playerData.modifier ~= 0 then
-        --     -- adjust for modifier
-        --     if playerData.modifier > 100 then
-        --         playerData.modifier = 100
-        --     end
-        --     risk = risk * ((playerData.modifier or 0) * 0.01)
-        -- end
         return risk > 0 and ZombRand(100) <= risk
     end
     return false
 end
 
-function PR:adjustForLight(zed, zData, player)
+function Core:adjustForLight(zed, zData, player)
 
     if slowInLightLevel == nil then
         slowInLightLevel = (self.settings.SlowInLightLevel or 74) * .01
@@ -183,7 +164,7 @@ function PR:adjustForLight(zed, zData, player)
     end
 end
 
-function PR:scream(zed, zData)
+function Core:scream(zed, zData)
 
     zData.screamed = true
     local soundName = "PhunRunners_" .. ZombRand(5) + 1
